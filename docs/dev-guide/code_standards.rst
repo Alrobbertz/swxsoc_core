@@ -46,7 +46,7 @@ Coding Style/Conventions
 Private code
 ============
 
-It is often useful to designate code as private, which means it is not part of the user facing API, only used internally by HERMES, and can be modified without a deprecation period.
+It is often useful to designate code as private, which means it is not part of the user facing API, only used internally by SWxSOC, and can be modified without a deprecation period.
 Any classes, functions, or variables that are private should either:
 
 - Have an underscore as the first character of their name, e.g., ``_my_private_function``.
@@ -71,13 +71,13 @@ Formatting
 We enforce a minimum level of code style with our continuous intergration.
 This runs a tool called `pre-commit <https://pre-commit.com/>`__.
 
-The settings and tools we use for the pre-commit can be found in the file :file:`.pre-commit-config.yaml` at the root of the HERMES git repository.
+The settings and tools we use for the pre-commit can be found in the file :file:`.pre-commit-config.yaml` at the root of the SWxSOC git repository.
 Some of the checks are:
 * Checks (but doesn't fix) various PEP8 issues with flake8.
 * Sort all imports in any Python files with isort.
 * Remove any unused variables or imports with autoflake.
 
-We suggest you use "tox" (which is used to run the HERMES test suite) to run these tools without having to setup anything within your own Python virtual environment::
+We suggest you use "tox" (which is used to run the SWxSOC test suite) to run these tools without having to setup anything within your own Python virtual environment::
 
     $ tox -e codestyle
 
@@ -91,7 +91,7 @@ Now you can do::
 
     $ pre-commit run --all-files
 
-which will run the tools on all files in the HERMES git repository.
+which will run the tools on all files in the SWxSOC git repository.
 The pre-commit tools can change some of the files, but in other cases it will report problems that require manual correction.
 If the pre-commit tool changes any files, they will show up as new changes that will need to be committed.
 
@@ -130,7 +130,7 @@ Documentation and Testing
   Additionally, examples or tutorials in the package documentation are strongly recommended.
 
 * Write usage examples in the docstrings of all classes and functions whenever possible.
-  These examples should be short and simple to reproduce–users should be able to copy them verbatim and run them.
+  These examples should be short and simple to reproduce-users should be able to copy them verbatim and run them.
   These examples should, whenever possible, be in the :ref:`doctests` format and will be executed as part of the test suite.
 
 * Unit tests should be provided for as many public methods and functions as possible, and should adhere to the standards set in the :ref:`testing` document.
@@ -153,7 +153,7 @@ Any other standard output, warnings, and errors should follow these rules:
 * For errors/exceptions, one should always use ``raise`` with one of the built-in exception classes, or a custom exception class (e.g. ValueError, TypeError).
   The nondescript ``Exception`` class should be avoided as much as possible, in favor of more specific exceptions (`IOError`, `ValueError`, etc.).
 
-* For warnings, use the appropriate custom warning classes (e.g. `hermes_core.util.exceptions.HERMESWarning`, `hermes_core.util.exceptions.HERMESUserWarning`) to enable them to be captured by the logging system.
+* For warnings, use the appropriate custom warning classes (e.g. `swxsoc_core.util.exceptions.SpaceWeatherWarning`, `swxsoc_core.util.exceptions.SpaceWeatherUserWarning`) to enable them to be captured by the logging system.
 
 * For debug messages, use the logging system `log.debug()` with a descriptive message.
   Remember that users may access those messages as well.
@@ -165,8 +165,8 @@ Including C Code
 
 * The use of `Cython`_ is strongly recommended for C extensions.
 
-* If a C extension has a dependency on an external C library, the source code for the library should be bundled with the HERMES repository, provided the license for the C library is compatible with the HERMES license.
-  Additionally, the package must be compatible with using a system-installed library in place of the library included in HERMES.
+* If a C extension has a dependency on an external C library, the source code for the library should be bundled with the SWxSOC repository, provided the license for the C library is compatible with the SWxSOC license.
+  Additionally, the package must be compatible with using a system-installed library in place of the library included in SWxSOC.
 
 * In cases where C extensions are needed but `Cython`_ cannot be used, the `PEP 7 Style Guide for C Code <https://www.python.org/dev/peps/pep-0007/>`_ is recommended.
 

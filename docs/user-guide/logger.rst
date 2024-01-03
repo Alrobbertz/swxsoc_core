@@ -11,7 +11,7 @@ The logging system is an adapted version of `~astropy.logger.AstropyLogger`.
 Its purpose is to provide users the ability to decide which log and warning messages to show,
 to capture them, and to send them to a file.
 
-All messages provided by HERMES use this logging facility which is based
+All messages provided by SWxSOC use this logging facility which is based
 on the Python `logging` module rather than print statements.
 
 Messages can have one of several levels, in increasing order of importance:
@@ -39,12 +39,12 @@ To make permanent changes to the logger configuration see the ``[logger]`` secti
 If you'd like to control the logger configuration for your current session
 first import the logger::
 
-    >>> from hermes_core import log
+    >>> from swxsoc_core import log
 
 or also by::
 
     >>> import logging
-    >>> log = logging.getLogger('hermes_core')
+    >>> log = logging.getLogger('swxsoc_core')
 
 The threshold level for messages can be set with::
 
@@ -54,14 +54,14 @@ This will display DEBUG and all messages with that level and above. If you'd lik
 relevant messages you'd set the logging level to WARNING or above.
 
 For other options such as whether to log to a file or what level of messages the log file should
-contain, see the the HERMES configuration file (:doc:`config </user-guide/customization>`).
+contain, see the the SWxSOC configuration file (:doc:`config </user-guide/customization>`).
 
 Context managers
 ================
 If you'd like to
 capture messages as they are generated you can do that with a context manager::
 
-    >>> from hermes_core import log
+    >>> from swxsoc_core import log
     >>> with log.log_to_list() as log_list:  #doctest: +SKIP
     ...    # your code here  # doctest: +SKIP
 
@@ -69,7 +69,7 @@ Once your code is executed, ``log_list`` will be a Python list containing all of
 This does not divert the messages from going to a file or to the screen.
 It is also possible to send the messages to a custom file with::
 
-    >>> from hermes_core import log
+    >>> from swxsoc_core import log
     >>> with log.log_to_file('myfile.log'):  #doctest: +SKIP
     ...     # your code here  #doctest: +SKIP
 

@@ -8,7 +8,7 @@ HERMES CDF Format Guide
 1. Introduction
 ===============
 
-The :py:class:`~hermes_core.util.schema.HermesDataSchema` class provides an interface to
+The :py:class:`~swxsoc_core.util.schema.SpaceWeatherDataSchema` class provides an interface to
 examine the HERMES CDF Format Guide.
 
 ---------------------
@@ -200,16 +200,16 @@ information is provided:
 * description: (`str`) A brief description of the attribute
 * default: (`str`) The default value used if none is provided
 * derived: (`bool`) Whether the attibute can be derived by the HERMES
-  :py:class:`~hermes_core.util.schema.HermesDataSchema` class
+  :py:class:`~swxsoc_core.util.schema.SpaceWeatherDataSchema` class
 * required: (`bool`) Whether the attribute is required by HERMES standards
 * validate: (`bool`) Whether the attribute is included in the
-  :py:func:`~hermes_core.util.validation.validate` checks (Note, not all attributes that
+  :py:func:`~swxsoc_core.util.validation.validate` checks (Note, not all attributes that
   are required are validated)
-* overwrite: (`bool`) Whether the :py:class:`~hermes_core.util.schema.HermesDataSchema`
+* overwrite: (`bool`) Whether the :py:class:`~swxsoc_core.util.schema.SpaceWeatherDataSchema`
   attribute derivations will overwrite an existing attribute value with an updated
   attribute value from the derivation process.
 
-Note that this table is derived from :file:`hermes_core/data/hermes_default_global_cdf_attrs_schema.yaml`
+Note that this table is derived from :file:`swxsoc_core/data/swxsoc_default_global_cdf_attrs_schema.yaml`
 
 .. csv-table:: Table 4-1: Required Global Attributes
    :file: ../generated/global_attributes.csv
@@ -529,9 +529,9 @@ information is provided:
 
 * description: (`str`) A brief description of the attribute
 * derived: (`bool`) Whether the attibute can be derived by the HERMES
-  :py:class:`~hermes_core.util.schema.HermesDataSchema` class
+  :py:class:`~swxsoc_core.util.schema.SpaceWeatherDataSchema` class
 * required: (`bool`) Whether the attribute is required by HERMES standards
-* overwrite: (`bool`) Whether the :py:class:`~hermes_core.util.schema.HermesDataSchema`
+* overwrite: (`bool`) Whether the :py:class:`~swxsoc_core.util.schema.SpaceWeatherDataSchema`
   attribute derivations will overwrite an existing attribute value with an updated
   attribute value from the derivation process.
 * valid_values: (`list`) List of allowed values the attribute can take for HERMES products,
@@ -542,7 +542,7 @@ information is provided:
 * var_types: (`str`) A list of the variable types that require the given
   attribute to be present.
 
-Note that this table is derived from :file:`hermes_core/data/hermes_default_variable_cdf_attrs_schema.yaml`
+Note that this table is derived from :file:`swxsoc_core/data/swxsoc_default_variable_cdf_attrs_schema.yaml`
 
 .. csv-table:: Table 5-4 HERMES Variable Attribute Schema
    :file: ../generated/variable_attributes.csv

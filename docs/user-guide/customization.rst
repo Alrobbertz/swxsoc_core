@@ -9,11 +9,11 @@ The :file:`configrc` file
 
 This package uses a :file:`configrc` configuration file to customize
 certain properties. You can control a number of key features of such as
-where your data will download to. HERMES packages look for this configuration file
+where your data will download to. SWxSOC packages look for this configuration file
 in a platform specific directory, which you can see the path for by running::
 
-  >>> import hermes_core
-  >>> hermes_core.print_config()  # doctest: +SKIP
+  >>> import swxsoc_core
+  >>> swxsoc_core.print_config()  # doctest: +SKIP
 
 Using your own :file:`configrc` file
 =====================================
@@ -28,15 +28,15 @@ If you work in our developer environment you can place your configuration file i
 
 .. code-block:: bash
 
-  /home/vscode/.config/hermes_core/
+  /home/vscode/.config/swxsoc_core/
 
 If you do not use our developer environment, you can run the following code to see where to place it on your specific machine as well:
 
 .. doctest::
 
-  >>> from hermes_core import util
+  >>> from swxsoc_core import util
   >>> print(util.config._get_user_configdir())
-  /home/vscode/.config/hermes_core
+  /home/vscode/.config/swxsoc_core
 
 
 .. note:: 
@@ -52,10 +52,10 @@ See below (:ref:`configrc-sample`) for an example configuration file.
 Dynamic settings
 ================
 
-You can also dynamically change most of the default settings. One setting that cannot be changed is the location of the log file which is set on import. All settings are stored in a Python ConfigParser instance called ``hermes_core.config``, which is global to the package. Settings can be modified directly, for example::
+You can also dynamically change most of the default settings. One setting that cannot be changed is the location of the log file which is set on import. All settings are stored in a Python ConfigParser instance called ``swxsoc_core.config``, which is global to the package. Settings can be modified directly, for example::
 
-    import hermes_core
-    hermes_core.config.set('downloads', 'download_dir', '/home/user/Downloads')
+    import swxsoc_core
+    swxsoc_core.config.set('downloads', 'download_dir', '/home/user/Downloads')
 
 
 .. _configrc-sample:
@@ -67,4 +67,4 @@ A sample configrc file
 
     `(download) <../_static/configrc>`__
 
-.. literalinclude:: ../../hermes_core/data/configrc
+.. literalinclude:: ../../swxsoc_core/data/configrc

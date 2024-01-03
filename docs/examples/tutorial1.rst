@@ -3,7 +3,7 @@
 Creating a CDF File
 ===================
 
-This module provides an example for creating a CDF File using the `~hermes_core.timedata.HermesData`
+This module provides an example for creating a CDF File using the `~swxsoc_core.timedata.SpaceWeatherData`
 class. This class is an abstraction of underlying data structures to make the handling of
 measurement data easier when reading and writing CDF data.
 
@@ -16,9 +16,9 @@ measurement data easier when reading and writing CDF data.
     >>> from ndcube import NDCube, NDCollection
     >>> import tempfile
     >>> 
-    >>> # Import the `hermes_core` Package
-    >>> from hermes_core.timedata import HermesData
-    >>> from hermes_core.util.validation import validate
+    >>> # Import the `swxsoc_core` Package
+    >>> from swxsoc_core.timedata import SpaceWeatherData
+    >>> from swxsoc_core.util.validation import validate
     >>> 
     >>> # Create a np.ndarray of example measurement data
     >>> bx = np.random.choice(a=[-1, 0, 1], size=1000).cumsum(0)
@@ -57,8 +57,8 @@ measurement data easier when reading and writing CDF data.
     ... )
     >>> 
     >>> # To make the creation of global metadata easier you can use the static
-    >>> # `HermesData.global_attribute_template()` function.
-    >>> global_attrs_template = HermesData.global_attribute_template()
+    >>> # `SpaceWeatherData.global_attribute_template()` function.
+    >>> global_attrs_template = SpaceWeatherData.global_attribute_template()
     >>> 
     >>> global_attrs_template["DOI"] = "https://doi.org/<PREFIX>/<SUFFIX>"
     >>> global_attrs_template["Data_level"] = "L1>Level 2"
@@ -85,7 +85,7 @@ measurement data easier when reading and writing CDF data.
     >>> global_attrs_template["PI_name"] = "Dr. Eftyhia Zesta"
     >>> global_attrs_template["TEXT"] = "Sample HERMES NEMISIS CDF File"
     >>> 
-    >>> example_data = HermesData(
+    >>> example_data = SpaceWeatherData(
     ...     timeseries=ts, 
     ...     support=support_data, 
     ...     spectra=spectra, 
@@ -93,8 +93,8 @@ measurement data easier when reading and writing CDF data.
     ... )
     >>> 
     >>> # To make the creation of variable metadata easier you can use the static
-    >>> # `HermesData.measurement_attribute_template()` function.
-    >>> template = HermesData.measurement_attribute_template()
+    >>> # `SpaceWeatherData.measurement_attribute_template()` function.
+    >>> template = SpaceWeatherData.measurement_attribute_template()
     >>> 
     >>> # Update the Metadata for each of the Measurements
     >>> example_data.timeseries["Bx GSE"].meta.update(
@@ -102,7 +102,7 @@ measurement data easier when reading and writing CDF data.
     >>> example_data.timeseries["By GSE"].meta.update(
     ...     OrderedDict({"CATDESC": "Y component of magnetic Field GSE"}))
     >>> 
-    >>> # You can add new scalar time-variant measurements to the HermesData container
+    >>> # You can add new scalar time-variant measurements to the SpaceWeatherData container
     >>> bz = np.random.choice(a=[-1, 0, 1], size=1000).cumsum(0)
     >>> example_data.add_measurement(
     ...     measure_name="Bz GSE",
@@ -113,7 +113,7 @@ measurement data easier when reading and writing CDF data.
     ...     },
     ... )
     >>> 
-    >>> # You can add new time-invariant data to the HermesData container
+    >>> # You can add new time-invariant data to the SpaceWeatherData container
     >>> example_data.add_support(
     ...     name="calibration_const",
     ...     data=NDData(data=[1e-1]),
@@ -123,7 +123,7 @@ measurement data easier when reading and writing CDF data.
     ...     },
     ... )
     >>> 
-    >>> # You can ass new spectral or high-dimensional data to the HermesData container
+    >>> # You can ass new spectral or high-dimensional data to the SpaceWeatherData container
     >>> data = NDCube(
     ...     data=np.random.random(size=(1000, 10)),
     ...     wcs=WCS(naxis=2),
@@ -145,4 +145,4 @@ measurement data easier when reading and writing CDF data.
     ...     cdf_file_path = example_data.save(output_path="./", overwrite=True)
 
 The file that this code generates is made available as a sample file in this
-repository in :file:`hermes_core/data/sample/hermes_nms_default_l1_20160322T123031_v0.0.1.cdf`.
+repository in :file:`swxsoc_core/data/sample/hermes_nms_default_l1_20160322T123031_v0.0.1.cdf`.
