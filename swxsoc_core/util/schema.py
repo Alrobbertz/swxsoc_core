@@ -279,7 +279,10 @@ class SpaceWeatherDataSchema:
 
         # Create the Info Table
         info = Table(rows=table_rows)
+        # Add the Attribute Name as a Column
         info.add_column(col=attribute_names, name="Attribute", index=0)
+        # Remove the Derivation Function Column, since this is not needed for the Docs
+        info.remove_column("derivation_fn")
 
         # Limit the Info to the requested Attribute
         if attribute_name and attribute_name in info["Attribute"]:
@@ -357,7 +360,10 @@ class SpaceWeatherDataSchema:
 
         # Create the Info Table
         info = Table(rows=table_rows)
+        # Add the Attribute Name as a Column
         info.add_column(col=attribute_names, name="Attribute", index=0)
+        # Remove the Derivation Function Column, since this is not needed for the Docs
+        info.remove_column("derivation_fn")
 
         # Limit the Info to the requested Attribute
         if attribute_name and attribute_name in info["Attribute"]:
@@ -684,49 +690,21 @@ class SpaceWeatherDataSchema:
                 (guess_dims, guess_types, guess_elements) = self._types(var_data.data)
 
         # Check the Attributes that can be derived
-        var_type = self._get_var_type(data, var_name)
+        var_type = self._get_var_type(var_name, var_data, guess_types[0])
 
-        if var_type == "data":
-            # Derive Attributes Specific to `data` VAR_TYPE
-            if not var_name == "time":
-                measurement_attributes["DEPEND_0"] = self._get_depend()
-            measurement_attributes["DISPLAY_TYPE"] = self._get_display_type()
-            measurement_attributes["FIELDNAM"] = self._get_fieldnam(var_name)
-            measurement_attributes["FILLVAL"] = self._get_fillval(guess_types[0])
-            measurement_attributes["FORMAT"] = self._get_format(
-                var_data, guess_types[0]
+        if var_type in ["data", "support_data", "metadata"]:
+            # Derive Attributes Specific to VAR_TYPE
+            derived_attributes = filter(
+                lambda attr_info: attr_info[0]
+                in self.variable_attribute_schema[var_type]
+                and attr_info[1]["derived"],
+                self.variable_attribute_schema["attribute_key"].items(),
             )
-            measurement_attributes["LABLAXIS"] = self._get_lablaxis(data, var_name)
-            measurement_attributes["SI_CONVERSION"] = self._get_si_conversion(
-                data, var_name
-            )
-            measurement_attributes["UNITS"] = self._get_units(data, var_name)
-            measurement_attributes["VALIDMIN"] = self._get_validmin(guess_types[0])
-            measurement_attributes["VALIDMAX"] = self._get_validmax(guess_types[0])
-            measurement_attributes["VAR_TYPE"] = self._get_var_type(data, var_name)
-        elif var_type == "support_data":
-            # Derive Attributes Specific to `support_data` VAR_TYPE
-            measurement_attributes["FIELDNAM"] = self._get_fieldnam(var_name)
-            measurement_attributes["FILLVAL"] = self._get_fillval(guess_types[0])
-            measurement_attributes["FORMAT"] = self._get_format(
-                var_data, guess_types[0]
-            )
-            measurement_attributes["LABLAXIS"] = self._get_lablaxis(data, var_name)
-            measurement_attributes["SI_CONVERSION"] = self._get_si_conversion(
-                data, var_name
-            )
-            measurement_attributes["UNITS"] = self._get_units(data, var_name)
-            measurement_attributes["VALIDMIN"] = self._get_validmin(guess_types[0])
-            measurement_attributes["VALIDMAX"] = self._get_validmax(guess_types[0])
-            measurement_attributes["VAR_TYPE"] = self._get_var_type(data, var_name)
-        elif var_type == "metadata":
-            # Derive Attributes Specific to `metadata` VAR_TYPE
-            measurement_attributes["FIELDNAM"] = self._get_fieldnam(var_name)
-            measurement_attributes["FILLVAL"] = self._get_fillval(guess_types[0])
-            measurement_attributes["FORMAT"] = self._get_format(
-                var_data, guess_types[0]
-            )
-            measurement_attributes["VAR_TYPE"] = self._get_var_type(data, var_name)
+            for attr_name, attr_schema in derived_attributes:
+                derivation_fn = getattr(self, attr_schema["derivation_fn"])
+                measurement_attributes[attr_name] = derivation_fn(
+                    var_name, var_data, guess_types[0]
+                )
         else:
             warn_user(
                 f"Variable {var_name} has unrecognizable VAR_TYPE ({var_type}). Cannot Derive Metadata for Variable."
@@ -787,35 +765,15 @@ class SpaceWeatherDataSchema:
         """
         global_attributes = OrderedDict()
         # Loop through Global Attributes
-        for attr_name, attr_schema in self.global_attribute_schema.items():
-            if attr_schema["derived"]:
-                derived_value = self._derive_global_attribute(data, attr_name=attr_name)
-                global_attributes[attr_name] = derived_value
-        return global_attributes
+        derived_attributes = filter(
+            lambda attr_info: attr_info[1]["derived"],
+            self.global_attribute_schema.items(),
+        )
+        for attr_name, attr_schema in derived_attributes:
+            derivation_fn = getattr(self, attr_schema["derivation_fn"])
+            global_attributes[attr_name] = derivation_fn(data)
 
-    def _derive_global_attribute(self, data, attr_name):
-        """
-        Function to Derive Global Metadata Attributes
-        """
-        # SWITCH on the Derivation attr_name
-        if attr_name == "Generation_date":
-            return self._get_generation_date(data)
-        elif attr_name == "Start_time":
-            return self._get_start_time(data)
-        elif attr_name == "Data_type":
-            return self._get_data_type(data)
-        elif attr_name == "Logical_file_id":
-            return self._get_logical_file_id(data)
-        elif attr_name == "Logical_source":
-            return self._get_logical_source(data)
-        elif attr_name == "Logical_source_description":
-            return self._get_logical_source_description(data)
-        elif attr_name == "SWxSOC_version":
-            return self._get_swxsoc_version(data)
-        elif attr_name == "CDF_Lib_version":
-            return self._get_cdf_lib_version(data)
-        else:
-            raise ValueError(f"Derivation for Attribute ({attr_name}) Not Recognized")
+        return global_attributes
 
     def _derive_spectra_attributes(self, var_data):
         """
@@ -849,19 +807,19 @@ class SpaceWeatherDataSchema:
     #                             VARIABLE METADATA DERIVATIONS
     # =============================================================================================
 
-    def _get_depend(self):
+    def _get_depend(self, var_name, var_data, guess_type):
         return "Epoch"
 
-    def _get_display_type(self):
+    def _get_display_type(self, var_name, var_data, guess_type):
         return "time_series"
 
-    def _get_fieldnam(self, var_name):
+    def _get_fieldnam(self, var_name, var_data, guess_type):
         if var_name != "time":
             return deepcopy(var_name)
         else:
             return "Epoch"
 
-    def _get_fillval(self, guess_type):
+    def _get_fillval(self, var_name, var_data, guess_type):
         # Get the Variable Data
         if guess_type == const.CDF_TIME_TT2000.value:
             return Time("9999-12-31T23:59:59.999999", format="isot")
@@ -896,7 +854,7 @@ class SpaceWeatherDataSchema:
         value = fillvals[cdf_type]
         return value
 
-    def _get_format(self, var_data, cdftype):
+    def _get_format(self, var_name, var_data, cdftype):
         """
         Format can be specified using either Fortran or C format codes.
         For instance, "F10.3" indicates that the data should be displayed across 10 characters
@@ -1032,8 +990,8 @@ class SpaceWeatherDataSchema:
             )
         return fmt
 
-    def _get_lablaxis(self, data, var_name):
-        return f"{var_name} [{self._get_units(data, var_name)}]"
+    def _get_lablaxis(self, var_name, var_data, guess_type):
+        return f"{var_name} [{self._get_units(var_name, var_data, guess_type)}]"
 
     def _get_reference_position(self, guess_type):
         if guess_type == const.CDF_TIME_TT2000.value:
@@ -1055,9 +1013,7 @@ class SpaceWeatherDataSchema:
         delta_seconds = delta.to_value("s")
         return f"{delta_seconds}s"
 
-    def _get_si_conversion(self, data, var_name):
-        # Get the Variable Data
-        var_data = data[var_name]
+    def _get_si_conversion(self, var_name, var_data, guess_type):
         if var_name == "time":
             conversion_rate = u.ns.to(u.s)
             si_conversion = f"{conversion_rate:e}>{u.s}"
@@ -1091,9 +1047,7 @@ class SpaceWeatherDataSchema:
         else:
             raise TypeError(f"Time Units for Time type ({guess_type}) not found.")
 
-    def _get_units(self, data, var_name):
-        # Get the Variable Data
-        var_data = data[var_name]
+    def _get_units(self, var_name, var_data, guess_type):
         unit = ""
         # Get the Unit from the TimeSeries Quantity if it exists
         if hasattr(var_data, "unit") and var_data.unit is not None:
@@ -1103,19 +1057,17 @@ class SpaceWeatherDataSchema:
             unit = var_data.meta["UNITS"]
         return unit
 
-    def _get_validmin(self, guess_type):
+    def _get_validmin(self, var_name, var_data, guess_type):
         # Get the Min Value
         minval, _ = self._get_minmax(guess_type)
         return minval
 
-    def _get_validmax(self, guess_type):
+    def _get_validmax(self, var_name, var_data, guess_type):
         # Get the Max Value
         _, maxval = self._get_minmax(guess_type)
         return maxval
 
-    def _get_var_type(self, data, var_name):
-        # Get the Variable Data
-        var_data = data[var_name]
+    def _get_var_type(self, var_name, var_data, guess_type):
         attr_name = "VAR_TYPE"
         if (attr_name not in var_data.meta) or (not var_data.meta[attr_name]):
             var_type = "data"

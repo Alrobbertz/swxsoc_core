@@ -127,8 +127,7 @@ def test_global_attributes():
 
     # Create SpaceWeatherData
     td = SpaceWeatherData(timeseries=ts, meta=template)
-    with pytest.raises(ValueError):
-        _ = SpaceWeatherDataSchema()._derive_global_attribute(td, "bad_attribute")
+    assert isinstance(td.meta, OrderedDict)
 
 
 def test_check_well_formed():
@@ -371,13 +370,15 @@ def test_format():
                 v.attrs["VALIDMIN"] = vmin
             if vmin is not None:
                 v.attrs["VALIDMAX"] = vmax
-            format = SpaceWeatherDataSchema()._get_format(cdf["var"], t)
+            format = SpaceWeatherDataSchema()._get_format("var", cdf["var"], t)
             assert e == format
             del cdf["var"]
 
         # Test Format Char
         v = cdf.new("var", data=["hi", "there"])
-        format = SpaceWeatherDataSchema()._get_format(cdf["var"], const.CDF_CHAR.value)
+        format = SpaceWeatherDataSchema()._get_format(
+            "var", cdf["var"], const.CDF_CHAR.value
+        )
         assert "A2" == format
 
 
@@ -387,7 +388,9 @@ def test_si_conversion():
     test_data = get_test_sw_data()
     # Default in Test Data "m"
     assert (
-        SpaceWeatherDataSchema()._get_si_conversion(test_data.timeseries, "measurement")
+        SpaceWeatherDataSchema()._get_si_conversion(
+            "measurement", test_data.timeseries["measurement"], 0
+        )
         == "1.000000e+00>m"
     )
 
@@ -399,11 +402,14 @@ def test_si_conversion():
         ),
     )
     assert (
-        SpaceWeatherDataSchema()._get_units(test_data.timeseries, "measurement1") == ""
+        SpaceWeatherDataSchema()._get_units(
+            "measurement1", test_data.timeseries["measurement1"], 0
+        )
+        == ""
     )
     assert (
         SpaceWeatherDataSchema()._get_si_conversion(
-            test_data.timeseries, "measurement1"
+            "measurement1", test_data.timeseries["measurement1"], 0
         )
         == "1.000000e+00>"
     )
@@ -414,12 +420,14 @@ def test_si_conversion():
         data=u.Quantity(value=random(size=(10)), unit=u.ct, dtype=np.uint16),
     )
     assert (
-        SpaceWeatherDataSchema()._get_units(test_data.timeseries, "measurement2")
+        SpaceWeatherDataSchema()._get_units(
+            "measurement2", test_data.timeseries["measurement2"], 0
+        )
         == "ct"
     )
     assert (
         SpaceWeatherDataSchema()._get_si_conversion(
-            test_data.timeseries, "measurement2"
+            "measurement2", test_data.timeseries["measurement2"], 0
         )
         == "1.0>ct"
     )
