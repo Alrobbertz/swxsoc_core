@@ -319,7 +319,7 @@ class SpaceWeatherData:
         template : `collections.OrderedDict`
             A template for required global attributes.
         """
-        meta = SpaceWeatherDataSchema.global_attribute_template()
+        meta = SpaceWeatherDataSchema().global_attribute_template()
 
         # Check the Optional Instrument Name
         if instr_name:
@@ -364,7 +364,7 @@ class SpaceWeatherData:
         template : `collections.OrderedDict`
             A template for required variable attributes that must be provided.
         """
-        return SpaceWeatherDataSchema.measurement_attribute_template()
+        return SpaceWeatherDataSchema().measurement_attribute_template()
 
     def _derive_metadata(self):
         """

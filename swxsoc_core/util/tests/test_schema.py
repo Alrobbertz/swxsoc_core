@@ -102,7 +102,7 @@ def test_load_yaml_data():
             file.write(invalid_yaml)
 
         # Load from an non-existant file
-        yaml_data = SpaceWeatherDataSchema._load_yaml_data(tmpdirname + "test.yaml")
+        yaml_data = SpaceWeatherDataSchema()._load_yaml_data(tmpdirname + "test.yaml")
         assert yaml_data == {}
 
 

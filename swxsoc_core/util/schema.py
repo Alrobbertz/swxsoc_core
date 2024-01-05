@@ -27,25 +27,83 @@ DEFAULT_VARIABLE_CDF_ATTRS_SCHEMA_FILE = "swxsoc_default_variable_cdf_attrs_sche
 
 
 class SpaceWeatherDataSchema:
-    """Class representing the schema of a file type."""
+    """
+    Class representing a schema for data requirements and formatting.
 
-    def __init__(self):
+    There are two main componentes to the Space Weather Data Schema, including both global and
+    variable attribute information.
+
+    Parameters
+    ----------
+    global_schema_layers :  `Optional[list[Path]]`
+        Absolute file paths to global attribute schema files. These schema files are layered
+        on top of one another in a latest-priority ordering. That is, the latest file that modifies
+        a common schema attribute will take precedence over earlier values for a given attribute.
+    variable_schema_layers :  `Optional[list[Path]]`
+        Absolute file paths to variable attribute schema files. These schema files are layered
+        on top of one another in a latest-priority ordering. That is, the latest file that modifies
+        a common schema attribute will take precedence over earlier values for a given attribute.
+    use_defaults: `Optional[bool]`
+        Whether or not to load the default global and variable attribute schema files. These
+        default schema files contain only the requirements for CDF ISTP validation.
+    """
+
+    def __init__(
+        self,
+        global_schema_layers: Optional[list[str]] = None,
+        variable_schema_layers: Optional[list[str]] = None,
+        use_defaults: Optional[bool] = True,
+    ):
         super().__init__()
 
         # Data Validation, Complaiance, Derived Attributes
-        self._global_attr_schema = (
-            SpaceWeatherDataSchema._load_default_global_attr_schema()
-        )
+        if not use_defaults and (
+            global_schema_layers is None
+            or variable_schema_layers is None
+            or len(global_schema_layers) == 0
+            or len(variable_schema_layers) == 0
+        ):
+            raise ValueError(
+                "Not enough information to create schema. You must either use the defaults or provide alternative layers for both global and variable attribbute schemas."
+            )
+
+        # Construct the Global Attribute Schema
+        _global_attr_schema = {}
+        if use_defaults:
+            _def_global_attr_schema = self._load_default_global_attr_schema()
+            _global_attr_schema = self._layer_global_schema(
+                base_layer=_global_attr_schema, new_layer=_def_global_attr_schema
+            )
+        if global_schema_layers is not None:
+            for schema_layer_path in global_schema_layers:
+                _global_attr_layer = self._load_yaml_data(
+                    yaml_file_path=schema_layer_path
+                )
+                _global_attr_schema = self._layer_global_schema(
+                    base_layer=_global_attr_schema, new_layer=_global_attr_layer
+                )
+        # Set Final Member
+        self._global_attr_schema = _global_attr_schema
 
         # Data Validation and Compliance for Variable Data
-        self._variable_attr_schema = (
-            SpaceWeatherDataSchema._load_default_variable_attr_schema()
-        )
-
+        _variable_attr_schema = {}
+        if use_defaults:
+            _def_variable_attr_schema = self._load_default_variable_attr_schema()
+            _variable_attr_schema = self._layer_variable_schema(
+                base_layer=_variable_attr_schema, new_layer=_def_variable_attr_schema
+            )
+        if variable_schema_layers is not None:
+            for schema_layer_path in variable_schema_layers:
+                _variable_attr_layer = self._load_yaml_data(
+                    yaml_file_path=schema_layer_path
+                )
+                _variable_attr_schema = self._layer_variable_schema(
+                    base_layer=_variable_attr_schema, new_layer=_variable_attr_layer
+                )
+        # Set the Final Member
+        self._variable_attr_schema = _variable_attr_schema
         # Load Default Global Attributes
-        self._default_global_attributes = (
-            SpaceWeatherDataSchema._load_default_attributes()
-        )
+        self._default_global_attributes = self._load_default_attributes()
 
         self.cdftypenames = {
             const.CDF_BYTE.value: "CDF_BYTE",
@@ -118,8 +176,7 @@ class SpaceWeatherDataSchema:
         """(`dict`) Default Global Attributes applied for all SWxSOC Data Files"""
         return self._default_global_attributes
 
-    @staticmethod
-    def _load_default_global_attr_schema() -> dict:
+    def _load_default_global_attr_schema(self) -> dict:
         # The Default Schema file is contained in the `swxsoc_core/data` directory
         default_schema_path = str(
             Path(swxsoc_core.__file__).parent
@@ -127,12 +184,9 @@ class SpaceWeatherDataSchema:
             / DEFAULT_GLOBAL_CDF_ATTRS_SCHEMA_FILE
         )
         # Load the Schema
-        return SpaceWeatherDataSchema._load_yaml_data(
-            yaml_file_path=default_schema_path
-        )
+        return self._load_yaml_data(yaml_file_path=default_schema_path)
 
-    @staticmethod
-    def _load_default_variable_attr_schema() -> dict:
+    def _load_default_variable_attr_schema(self) -> dict:
         # The Default Schema file is contained in the `swxsoc_core/data` directory
         default_schema_path = str(
             Path(swxsoc_core.__file__).parent
@@ -140,29 +194,23 @@ class SpaceWeatherDataSchema:
             / DEFAULT_VARIABLE_CDF_ATTRS_SCHEMA_FILE
         )
         # Load the Schema
-        return SpaceWeatherDataSchema._load_yaml_data(
-            yaml_file_path=default_schema_path
-        )
+        return self._load_yaml_data(yaml_file_path=default_schema_path)
 
-    @staticmethod
-    def _load_default_attributes() -> dict:
+    def _load_default_attributes(self) -> dict:
         # The Default Attributes file is contained in the `swxsoc_core/data` directory
         default_attributes_path = str(
             Path(swxsoc_core.__file__).parent
             / "data"
             / DEFAULT_GLOBAL_CDF_ATTRS_SCHEMA_FILE
         )
-        global_schema = SpaceWeatherDataSchema._load_yaml_data(
-            yaml_file_path=default_attributes_path
-        )
+        global_schema = self._load_yaml_data(yaml_file_path=default_attributes_path)
         return {
             attr_name: info["default"]
             for attr_name, info in global_schema.items()
             if info["default"] is not None
         }
 
-    @staticmethod
-    def _load_yaml_data(yaml_file_path: str) -> dict:
+    def _load_yaml_data(self, yaml_file_path: str) -> dict:
         """
         Function to load data from a Yaml file.
 
@@ -183,8 +231,7 @@ class SpaceWeatherDataSchema:
                 log.critical(exc)
         return yaml_data
 
-    @staticmethod
-    def global_attribute_template() -> OrderedDict:
+    def global_attribute_template(self) -> OrderedDict:
         """
         Function to generate a template of required global attributes
         that must be set for a valid CDF.
@@ -195,11 +242,8 @@ class SpaceWeatherDataSchema:
             A template for required global attributes that must be provided.
         """
         template = OrderedDict()
-        global_attribute_schema = (
-            SpaceWeatherDataSchema._load_default_global_attr_schema()
-        )
-        default_global_attributes = SpaceWeatherDataSchema._load_default_attributes()
-        for attr_name, attr_schema in global_attribute_schema.items():
+        default_global_attributes = self._load_default_attributes()
+        for attr_name, attr_schema in self.global_attribute_schema.items():
             if (
                 attr_schema["required"]
                 and not attr_schema["derived"]
@@ -208,8 +252,7 @@ class SpaceWeatherDataSchema:
                 template[attr_name] = None
         return template
 
-    @staticmethod
-    def measurement_attribute_template() -> OrderedDict:
+    def measurement_attribute_template(self) -> OrderedDict:
         """
         Function to generate a template of required measurement attributes
         that must be set for a valid CDF measurement variable.
@@ -220,18 +263,14 @@ class SpaceWeatherDataSchema:
             A template for required variable attributes that must be provided.
         """
         template = OrderedDict()
-        measurement_attribute_schema = (
-            SpaceWeatherDataSchema._load_default_variable_attr_schema()
-        )
-        for attr_name, attr_schema in measurement_attribute_schema[
+        for attr_name, attr_schema in self.variable_attribute_schema[
             "attribute_key"
         ].items():
             if attr_schema["required"] and not attr_schema["derived"]:
                 template[attr_name] = None
         return template
 
-    @staticmethod
-    def global_attribute_info(attribute_name: Optional[str] = None) -> Table:
+    def global_attribute_info(self, attribute_name: Optional[str] = None) -> Table:
         """
         Function to generate a `astropy.table.Table` of information about each global
         metadata attribute. The `astropy.table.Table` contains all information in the SWxSOC
@@ -263,19 +302,15 @@ class SpaceWeatherDataSchema:
         ------
         KeyError: If attribute_name is not a recognized global attribute.
         """
-        global_attribute_schema = (
-            SpaceWeatherDataSchema._load_default_global_attr_schema()
-        )
-
         # Strip the Description of New Lines
-        for attr_name in global_attribute_schema.keys():
-            global_attribute_schema[attr_name]["description"] = global_attribute_schema[
-                attr_name
-            ]["description"].strip()
+        for attr_name in self.global_attribute_schema.keys():
+            self.global_attribute_schema[attr_name][
+                "description"
+            ] = self.global_attribute_schema[attr_name]["description"].strip()
 
         # Get all the Attributes from the Schema
-        attribute_names = list(global_attribute_schema.keys())
-        table_rows = [info for _, info in global_attribute_schema.items()]
+        attribute_names = list(self.global_attribute_schema.keys())
+        table_rows = [info for _, info in self.global_attribute_schema.items()]
 
         # Create the Info Table
         info = Table(rows=table_rows)
@@ -294,8 +329,7 @@ class SpaceWeatherDataSchema:
 
         return info
 
-    @staticmethod
-    def measurement_attribute_info(attribute_name: Optional[str] = None) -> Table:
+    def measurement_attribute_info(self, attribute_name: Optional[str] = None) -> Table:
         """
         Function to generate a `astropy.table.Table` of information about each variable
         metadata attribute. The `astropy.table.Table` contains all information in the SWxSOC
@@ -330,10 +364,7 @@ class SpaceWeatherDataSchema:
         ------
         KeyError: If attribute_name is not a recognized global attribute.
         """
-        measurement_attribute_schema = (
-            SpaceWeatherDataSchema._load_default_variable_attr_schema()
-        )
-        measurement_attribute_key = measurement_attribute_schema["attribute_key"]
+        measurement_attribute_key = self.variable_attribute_schema["attribute_key"]
 
         # Strip the Description of New Lines
         for attr_name in measurement_attribute_key.keys():
@@ -347,7 +378,7 @@ class SpaceWeatherDataSchema:
             measurement_attribute_key[attr_name]["var_types"] = []
             for var_type in ["data", "support_data", "metadata"]:
                 # If the attribute is required for the given var type
-                if attr_name in measurement_attribute_schema[var_type]:
+                if attr_name in self.variable_attribute_schema[var_type]:
                     measurement_attribute_key[attr_name]["var_types"].append(var_type)
             # Convert the list to a string that can be written to a CSV from the table
             measurement_attribute_key[attr_name]["var_types"] = " ".join(
@@ -374,6 +405,12 @@ class SpaceWeatherDataSchema:
             )
 
         return info
+
+    def _layer_global_schema(self, base_layer, new_layer):
+        return new_layer
+
+    def _layer_variable_schema(self, base_layer, new_layer):
+        return new_layer
 
     @staticmethod
     def _check_well_formed(data):
