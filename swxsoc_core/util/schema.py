@@ -476,10 +476,35 @@ class SpaceWeatherDataSchema:
         return info
 
     def _layer_global_schema(self, base_layer, new_layer):
-        return new_layer
+        return self._merge(base_layer, new_layer)
 
     def _layer_variable_schema(self, base_layer, new_layer):
-        return new_layer
+        return self._merge(base_layer, new_layer)
+
+    def _merge(self, a: dict, b: dict, path: list = None):
+        # If we are at the top of the recursion, and we don't have a path, create a new one
+        if not path:
+            path = []
+        # for each key in the base layer
+        for key in b:
+            # If its a shared key
+            if key in a:
+                # If both are dictionaries
+                if isinstance(a[key], dict) and isinstance(b[key], dict):
+                    # Merge the two nested dictionaries together
+                    self._merge(a[key], b[key], path + [str(key)])
+                # If both are lists
+                if isinstance(a[key], list) and isinstance(b[key], list):
+                    # Extend the list of the base layer by the new layer
+                    a[key].extend(b[key])
+                # If they are not lists or dicts (scalars)
+                elif a[key] != b[key]:
+                    # We've reached a conflict, may want to overwrite the base with the new layer.
+                    raise Exception("Conflict at " + ".".join(path + [str(key)]))
+            # If its not a shared key
+            else:
+                a[key] = b[key]
+        return a
 
     @staticmethod
     def _check_well_formed(data):
