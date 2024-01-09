@@ -596,6 +596,7 @@ def test_sw_data_plot():
         "Descriptor": "EEA>Electron Electrostatic Analyzer",
         "Data_level": "l1>Level 1",
         "Data_version": "v0.0.1",
+        "Mission_group": "HERMES",
     }
     # fmt: on
 
@@ -680,6 +681,7 @@ def test_sw_data_generate_valid_cdf():
         "Data_version": "0.0.1",
         "Descriptor": "EEA>Electron Electrostatic Analyzer",
         "Data_product_descriptor": "odpd",
+        "Discipline": "Space Physics>Magnetospheric Science",
         "HTTP_LINK": [
             "https://spdf.gsfc.nasa.gov/istp_guide/istp_guide.html",
             "https://spdf.gsfc.nasa.gov/istp_guide/gattributes.html",
@@ -697,6 +699,7 @@ def test_sw_data_generate_valid_cdf():
             "Global Attrs",
             "Variable Attrs"
         ],
+        "Mission_group": "HERMES",
         "MODS": [
             "v0.0.0 - Original version.",
             "v1.0.0 - Include trajectory vectors and optics state.",
@@ -706,7 +709,9 @@ def test_sw_data_generate_valid_cdf():
         ],
         "PI_affiliation": "SWxSOC",
         "PI_name": "SWxSOC",
+        "Project": "STP>Solar-Terrestrial Physics",
         "TEXT": "Valid Test Case",
+        "Source_name": "HERMES>Heliophysics Environmental and Radiation Measurement Experiment Suite"
     }
     # fmt: on
 
@@ -791,6 +796,7 @@ def test_sw_data_from_cdf():
         "Data_version": "0.0.1",
         "Descriptor": "EEA>Electron Electrostatic Analyzer",
         "Data_product_descriptor": "odpd",
+        "Discipline": "Space Physics>Magnetospheric Science",
         "HTTP_LINK": [
             "https://spdf.gsfc.nasa.gov/istp_guide/istp_guide.html",
             "https://spdf.gsfc.nasa.gov/istp_guide/gattributes.html",
@@ -808,6 +814,7 @@ def test_sw_data_from_cdf():
             "Global Attrs",
             "Variable Attrs"
         ],
+        "Mission_group": "HERMES",
         "MODS": [
             "v0.0.0 - Original version.",
             "v1.0.0 - Include trajectory vectors and optics state.",
@@ -817,7 +824,9 @@ def test_sw_data_from_cdf():
         ],
         "PI_affiliation": "SWxSOC",
         "PI_name": "SWxSOC",
+        "Project": "STP>Solar-Terrestrial Physics",
         "TEXT": "Valid Test Case",
+        "Source_name": "HERMES>Heliophysics Environmental and Radiation Measurement Experiment Suite"
     }
     # fmt: on
 
@@ -930,6 +939,7 @@ def test_sw_data_idempotency():
             "Global Attrs",
             "Variable Attrs"
         ],
+        "Mission_group": "HERMES",
         "MODS": [
             "v0.0.0 - Original version.",
             "v1.0.0 - Include trajectory vectors and optics state.",
@@ -1066,6 +1076,7 @@ def test_bitlength_save_cdf(bitlength):
             "Global Attrs",
             "Variable Attrs"
         ],
+        "Mission_group": "HERMES",
         "MODS": [
             "v0.0.0 - Original version.",
             "v1.0.0 - Include trajectory vectors and optics state.",
@@ -1115,6 +1126,7 @@ def test_overwrite_save():
             "Global Attrs",
             "Variable Attrs"
         ],
+        "Mission_group": "HERMES",
         "MODS": [
             "v0.0.0 - Original version.",
             "v1.0.0 - Include trajectory vectors and optics state.",
@@ -1167,6 +1179,7 @@ def test_without_cdf_lib():
             "Global Attrs",
             "Variable Attrs"
         ],
+        "Mission_group": "HERMES",
         "MODS": [
             "v0.0.0 - Original version.",
             "v1.0.0 - Include trajectory vectors and optics state.",

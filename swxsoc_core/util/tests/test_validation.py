@@ -72,10 +72,9 @@ def test_missing_global_attrs():
         # Validate
         result = validate(out_file)
         assert (
-            "Required attribute (Descriptor) not present in global attributes."
+            "Required attribute (Mission_group) not present in global attributes."
             in result
         )
-        assert "Required attribute (DOI) not present in global attributes." in result
 
 
 def test_missing_var_type():

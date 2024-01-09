@@ -171,6 +171,7 @@ class SpaceWeatherDataSchema:
                 )
         # Set the Final Member
         self._variable_attr_schema = _variable_attr_schema
+
         # Load Default Global Attributes
         self._default_global_attributes = self._load_default_attributes()
 
@@ -266,13 +267,8 @@ class SpaceWeatherDataSchema:
         return self._load_yaml_data(yaml_file_path=default_schema_path)
 
     def _load_default_attributes(self) -> dict:
-        # The Default Attributes file is contained in the `swxsoc_core/data` directory
-        default_attributes_path = str(
-            Path(swxsoc_core.__file__).parent
-            / "data"
-            / DEFAULT_GLOBAL_CDF_ATTRS_SCHEMA_FILE
-        )
-        global_schema = self._load_yaml_data(yaml_file_path=default_attributes_path)
+        # Use the Existing Global Schema
+        global_schema = self.global_attribute_schema
         return {
             attr_name: info["default"]
             for attr_name, info in global_schema.items()
@@ -500,7 +496,7 @@ class SpaceWeatherDataSchema:
                 # If they are not lists or dicts (scalars)
                 elif a[key] != b[key]:
                     # We've reached a conflict, may want to overwrite the base with the new layer.
-                    raise Exception("Conflict at " + ".".join(path + [str(key)]))
+                    a[key] = b[key]
             # If its not a shared key
             else:
                 a[key] = b[key]
