@@ -1,91 +1,6 @@
 # Based on :  https://spdf.gsfc.nasa.gov/istp_guide/vattributes.html
 #             HERMES CDF Format Guide
 attribute_key:
-  # ===== EPOCH-ONLY VARIABLE ATTRIBUTES =====
-  TIME_BASE:
-    description: > 
-      fixed (0AD, 1900, 1970 (POSIX), J2000 (used by CDF_TIME_TT2000),
-      4714 BC (Julian)) or flexible (provider-defined)
-    derived: true
-    required: true    # NOT Required in ISTP Guide
-    overwrite: false
-    valid_values: null
-    alternate: null
-  RESOLUTION:
-    description: > 
-      Using ISO8601 relative time format, for example: "1s" = 1 second. 
-      Resolution provides the smallest change in time that is measured.
-    derived: true
-    required: true    # NOT Required in ISTP Guide
-    overwrite: false
-    valid_values: null
-    alternate: null
-  TIME_SCALE:
-    description: >
-      TT (same as TDT, used by CDF_TIME_TT2000), TAI (same as IAT, TT-32.184s), 
-      UTC (includes leap seconds), TDB (same as SPICE ET), EME1950 [default: UTC]
-    derived: true
-    required: true    # NOT Required in ISTP Guide
-    overwrite: false
-    valid_values: null
-    alternate: null
-  REFERENCE_POSITION:
-    description: >
-      Topocenter (local), Geocenter , rotating Earth geoid (used by CDF_TIME_TT2000). 
-      Reference_Position is optional metadata to account for time variance with position in 
-      the gravity wells and with relative velocity. While we could use a combined 
-      TimeSystem attribute that defines mission-specific time scales where needed, such as 
-      UTC-at-STEREO-B, it's cleaner to keep them separate as Time_Scale=UTC and 
-      Reference_Position=STEREO-B.
-    derived: true
-    required: true    # NOT Required in ISTP Guide
-    overwrite: false
-    valid_values: null
-    alternate: null
-  LEAP_SECONDS_INCLUDED:
-    description: > 
-      comma-delimited list (within brackets) of leap seconds included in the form of a lists
-      of ISO8601 times when each leap second was added, appended with the size of the leap 
-      second in ISO8601 relative time (+/- time, most commonly: "+1s") [default: standard 
-      list of leap seconds up to time of data]. Leap_Seconds_Included is needed to account 
-      for time scales that don't have all 34 (in 2009) leap seconds and for the clocks in 
-      various countries that started using leap seconds at different times. The full list is 
-      required to handle the equally or more common case where a time scale starts at a 
-      pecific UTC but continues on without leap seconds in TAI mode; this is basically what 
-      missions that don't add leap seconds are doing.
-      $ cat tai-utc.dat | awk 'ORS="," { val = $7 - prev } {prev = $7} { print $1$2"01+" val "s" }'
-    derived: false
-    required: false   # NOT Required in ISTP Guide
-    overwrite: false
-    valid_values: null
-    alternate: null
-  ABSOLUTE_ERROR:
-    description: >
-      Absolute or systematic error, in same units as Units attribute.
-    derived: false
-    required: false   # NOT Required in ISTP Guide
-    overwrite: false
-    valid_values: null
-    alternate: null
-  RELATIVE_ERROR:
-    description: >
-      Relative or random error, in same units as Units attribute - to specify the accuracy 
-      of the time stamps relative to each other. This is usually much smaller than Absolute_Error.
-    derived: false
-    required: false   # NOT Required in ISTP Guide
-    overwrite: false
-    valid_values: null
-    alternate: null
-  BIN_LOCATION:
-    description: >
-      relative position of time stamp to the data measurement bin, with 0.0 at the beginning 
-      of time bin and 1.0 at the end. Default is 0.5 for the time at the center of the data 
-      measurement. Since clock readings are usually truncated, the real value may be closer to 0.0.
-    derived: false
-    required: false   # NOT Required in ISTP Guide
-    overwrite: false
-    valid_values: null
-    alternate: null
   # ===== DATA VARIABLE ATTRIBUTES =====
   CATDESC:
     description: >
@@ -93,36 +8,6 @@ attribute_key:
       character string which describes the variable and what it depends on.
     derived: false
     required: true
-    overwrite: false
-    valid_values: null
-    alternate: null
-  DELTA_MINUS_VAR:
-    description: >
-      DEPEND_i variables are typically physical values along the corresponding i-th
-      dimension of the parent data variable, such as energy levels or spectral frequencies. The
-      discreet set of values are located with respect to the sampling bin by
-      DELTA_PLUS_VAR and DELTA_MINUS_VAR, which hold the variable name
-      containing the distance from the value to the bin edge. It is strongly recommended that
-      HERMES DEPEND_i variables include DELTA_PLUS_VAR and
-      DELTA_MINUS_VAR attributes that point to the appropriate variable(s) located
-      elsewhere in the CDF file.
-    derived: false
-    required: false # NOT Required in ISTP Guide
-    overwrite: false
-    valid_values: null
-    alternate: null
-  DELTA_PLUS_VAR:
-    description: >
-      DEPEND_i variables are typically physical values along the corresponding i-th
-      dimension of the parent data variable, such as energy levels or spectral frequencies. The
-      discreet set of values are located with respect to the sampling bin by
-      DELTA_PLUS_VAR and DELTA_MINUS_VAR, which hold the variable name
-      containing the distance from the value to the bin edge. It is strongly recommended that
-      HERMES DEPEND_i variables include DELTA_PLUS_VAR and
-      DELTA_MINUS_VAR attributes that point to the appropriate variable(s) located
-      elsewhere in the CDF file.
-    derived: false
-    required: false # NOT Required in ISTP Guide
     overwrite: false
     valid_values: null
     alternate: null
@@ -245,7 +130,7 @@ attribute_key:
       transformed into SI should follow the blank syntax " > " described above.
     derived: true
     derivation_fn: _get_si_conversion
-    required: true  # NOT Required in ISTP Guide
+    required: false  # NOT Required in ISTP Guide
     overwrite: false
     valid_values: null
     alternate: null
@@ -309,53 +194,6 @@ attribute_key:
         support_data
         metadata
         ignore_data
-    alternate: null
-  COORDINATE_SYSTEM:
-    description: > 
-      All variables for which the values are dependent on the system of coordinates are
-      strongly recommended to have this attribute. This includes both full vectors, tensors, etc.
-      or individual values, e.g. of an angle with respect to some axis. The attribute is a text
-      string which takes the form: "XXX[>optional long name]"
-    derived: false
-    required: false   # NOT Required in HERMES Format Guide
-    overwrite: false
-    valid_values: null
-    alternate: null
-  TENSOR_ORDER:
-    description: > 
-      All variables which hold physical vectors, tensors, etc., or sub-parts thereof, are strongly
-      recommended to have their tensorial properties held by this numerical value. Vectors
-      have TENSOR_ORDER=1, pressure tensors have TENSOR_ORDER=2, etc. Variables
-      which hold single components or sub-parts of a vector or tensor, e.g., the x-component of
-      velocity or the three diagonal elements of a tensor, use this attribute to establish the
-      underlying object from which they are extracted. TENSOR_ORDER is a number, usually
-      held as a CDF_INT4, rather than a character string.
-    derived: false
-    required: false   # NOT Required in HERMES Format Guide
-    overwrite: false
-    valid_values: null
-    alternate: null
-  REPRESENTATION_i:
-    description: >
-      This strongly recommended attribute holds the way vector or tensor variables are held,
-      e.g., as Cartesian or polar forms, and their sequence order in the dimension i in which
-      they are held. Cartesians are indicated by x,y,z; polar coordinates by r (magnitude), t
-      (theta - from z-axis), p (phi - longitude or azimuth around z-axis from x axis), l (lambda
-      = latitude). Examples follow.
-    derived: false
-    required: false   # NOT Required in HERMES Format Guide
-    overwrite: false
-    valid_values: null
-    alternate: null
-  OPERATOR_TYPE:
-    description: > 
-      This has been introduced to describe HERMES quaternions (see Section 5.2 below). It
-      has allowed values "UNIT_QUATERNION" or "ROTATION_MATRIX" although other
-      values could be added. Unit quaternions correspond to pure spatial rotations.
-    derived: false
-    required: false   # NOT Required in HERMES Format Guide
-    overwrite: false
-    valid_values: null
     alternate: null
   WCSAXES:
     description: > 
