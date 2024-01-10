@@ -140,7 +140,7 @@ class SpaceWeatherDataSchema:
         _global_attr_schema = {}
         if use_defaults:
             _def_global_attr_schema = self._load_default_global_attr_schema()
-            _global_attr_schema = self._layer_global_schema(
+            _global_attr_schema = self._merge(
                 base_layer=_global_attr_schema, new_layer=_def_global_attr_schema
             )
         if global_schema_layers is not None:
@@ -148,7 +148,7 @@ class SpaceWeatherDataSchema:
                 _global_attr_layer = self._load_yaml_data(
                     yaml_file_path=schema_layer_path
                 )
-                _global_attr_schema = self._layer_global_schema(
+                _global_attr_schema = self._merge(
                     base_layer=_global_attr_schema, new_layer=_global_attr_layer
                 )
         # Set Final Member
@@ -158,7 +158,7 @@ class SpaceWeatherDataSchema:
         _variable_attr_schema = {}
         if use_defaults:
             _def_variable_attr_schema = self._load_default_variable_attr_schema()
-            _variable_attr_schema = self._layer_variable_schema(
+            _variable_attr_schema = self._merge(
                 base_layer=_variable_attr_schema, new_layer=_def_variable_attr_schema
             )
         if variable_schema_layers is not None:
@@ -166,7 +166,7 @@ class SpaceWeatherDataSchema:
                 _variable_attr_layer = self._load_yaml_data(
                     yaml_file_path=schema_layer_path
                 )
-                _variable_attr_schema = self._layer_variable_schema(
+                _variable_attr_schema = self._merge(
                     base_layer=_variable_attr_schema, new_layer=_variable_attr_layer
                 )
         # Set the Final Member
@@ -471,36 +471,34 @@ class SpaceWeatherDataSchema:
 
         return info
 
-    def _layer_global_schema(self, base_layer, new_layer):
-        return self._merge(base_layer, new_layer)
-
-    def _layer_variable_schema(self, base_layer, new_layer):
-        return self._merge(base_layer, new_layer)
-
-    def _merge(self, a: dict, b: dict, path: list = None):
+    def _merge(self, base_layer: dict, new_layer: dict, path: list = None):
         # If we are at the top of the recursion, and we don't have a path, create a new one
         if not path:
             path = []
         # for each key in the base layer
-        for key in b:
+        for key in new_layer:
             # If its a shared key
-            if key in a:
+            if key in base_layer:
                 # If both are dictionaries
-                if isinstance(a[key], dict) and isinstance(b[key], dict):
+                if isinstance(base_layer[key], dict) and isinstance(
+                    new_layer[key], dict
+                ):
                     # Merge the two nested dictionaries together
-                    self._merge(a[key], b[key], path + [str(key)])
+                    self._merge(base_layer[key], new_layer[key], path + [str(key)])
                 # If both are lists
-                if isinstance(a[key], list) and isinstance(b[key], list):
+                if isinstance(base_layer[key], list) and isinstance(
+                    new_layer[key], list
+                ):
                     # Extend the list of the base layer by the new layer
-                    a[key].extend(b[key])
+                    base_layer[key].extend(new_layer[key])
                 # If they are not lists or dicts (scalars)
-                elif a[key] != b[key]:
+                elif base_layer[key] != new_layer[key]:
                     # We've reached a conflict, may want to overwrite the base with the new layer.
-                    a[key] = b[key]
+                    base_layer[key] = new_layer[key]
             # If its not a shared key
             else:
-                a[key] = b[key]
-        return a
+                base_layer[key] = new_layer[key]
+        return base_layer
 
     @staticmethod
     def _check_well_formed(data):
