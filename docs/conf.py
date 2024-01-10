@@ -118,7 +118,7 @@ intersphinx_mapping = {
 html_theme = "bizstyle"
 html_static_path = ["_static"]
 
-html_logo = "logo/hermes_logo.png"
+html_logo = "logo/swxsoc_logo.png"
 html_favicon = "logo/favicon.ico"
 html_css_files = [
     "css/custom.css",
