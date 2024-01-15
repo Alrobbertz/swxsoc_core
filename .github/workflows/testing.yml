@@ -73,12 +73,12 @@ jobs:
         set JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF8"
 
         # Run tests
-        pytest --pyargs swxsoc_core --cov swxsoc_core
+        pytest --pyargs swxsoc --cov swxsoc
       # Skip Windows Python 3.11 tests until SpacePy is updated
       if: ${{(matrix.platform == 'windows-latest' && matrix.python-version != '3.11')}}
 
     - name: Run tests on Ubuntu and MacOS
-      run: pytest --pyargs swxsoc_core --cov swxsoc_core
+      run: pytest --pyargs swxsoc --cov swxsoc
       env:
         PLATFORM: ${{ matrix.platform }}
       if: ${{ !(matrix.platform == 'windows-latest') }}

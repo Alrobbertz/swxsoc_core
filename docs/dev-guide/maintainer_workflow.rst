@@ -99,7 +99,7 @@ Push to open pull request
 
 Now you need to push the changes you have made to the code to the open pull request::
 
-    $ git push git@github.com:<username>/swxsoc_core.git HEAD:<name of branch>
+    $ git push git@github.com:<username>/swxsoc.git HEAD:<name of branch>
 
 You might have to add ``--force`` if you rebased instead of adding new commits.
 
@@ -131,4 +131,4 @@ Releases
 
 We have a `step by step checklist`_ on the Wiki on how to make a release.
 
-.. _step by step checklist: https://github.com/Alrobbertz/swxsoc_core/wiki/Release-Process
+.. _step by step checklist: https://github.com/swxsoc/swxsoc/wiki/Release-Process

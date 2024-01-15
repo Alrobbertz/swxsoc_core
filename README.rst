@@ -26,11 +26,19 @@ Overview
     :target: https://github.com/Alrobbertz/swxsoc_core/actions/workflows/codestyle.yml
     :alt: Codestyle and linting using flake8
 
+.. |coverage| image:: https://codecov.io/gh/Alrobbertz/swxsoc_core/branch/main/graph/badge.svg?token=C6JLIWZRBU 
+    :target: https://codecov.io/gh/swxsoc/swxsoc
+    :alt: Testing coverage
+
+.. |readthedocs| image:: https://readthedocs.org/projects/swxsoc/badge/?version=latest
+    :target: https://swxsoc.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
+
 .. end-badges
 
 Documentation
 -------------
-The documentation is hosted on readthedocs and is available `here <https://hermes-core.readthedocs.io/en/latest/>`_.
+The documentation is hosted on readthedocs and is available `here <https://swxsoc.readthedocs.io/en/latest/>`_.
 
 License
 -------
@@ -39,8 +47,8 @@ See the license/LICENSE file for more information.
 
 Code of Conduct
 ---------------
-When you are interacting with the HERMES-SOC community you are asked to follow
-our `Code of Conduct <https://github.com/HERMES-SOC/code-of-conduct/blob/main/CODE_OF_CONDUCT.md>`_.
+When you are interacting with the SWxSOC community you are asked to follow
+our `Code of Conduct <https://github.com/swxsoc/code-of-conduct/blob/main/CODE_OF_CONDUCT.md>`_.
 
 Acknowledgements
 ----------------

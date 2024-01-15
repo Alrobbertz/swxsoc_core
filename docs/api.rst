@@ -4,17 +4,17 @@
 API Reference
 *************
 
-.. automodapi:: swxsoc_core
+.. automodapi:: swxsoc
    :no-inheritance-diagram:
-.. automodapi:: swxsoc_core.timedata
+.. automodapi:: swxsoc.swxdata
    :no-inheritance-diagram:
-.. automodapi:: swxsoc_core.util
+.. automodapi:: swxsoc.util
    :no-inheritance-diagram:
-.. automodapi:: swxsoc_core.util.io
+.. automodapi:: swxsoc.util.io
    :no-inheritance-diagram:
-.. automodapi:: swxsoc_core.util.schema
+.. automodapi:: swxsoc.util.schema
    :no-inheritance-diagram:
-.. automodapi:: swxsoc_core.util.util
+.. automodapi:: swxsoc.util.util
    :no-inheritance-diagram:
-.. automodapi:: swxsoc_core.util.validation
+.. automodapi:: swxsoc.util.validation
    :no-inheritance-diagram:

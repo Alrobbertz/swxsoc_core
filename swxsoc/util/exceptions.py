@@ -10,26 +10,26 @@ This code is based on that provided by SunPy see
 import warnings
 
 __all__ = [
-    "SpaceWeatherWarning",
-    "SpaceWeatherUserWarning",
-    "SpaceWeatherDeprecationWarning",
-    "SpaceWeatherPendingDeprecationWarning",
+    "SWXWarning",
+    "SWXUserWarning",
+    "SWXDeprecationWarning",
+    "SWXPendingDeprecationWarning",
     "warn_user",
     "warn_deprecated",
 ]
 
 
-class SpaceWeatherWarning(Warning):
+class SWXWarning(Warning):
     """
-    The base warning class from which all SpaceWeather warnings should inherit.
+    The base warning class from which all SWX warnings should inherit.
 
-    Any warning inheriting from this class is handled by the SpaceWeather
+    Any warning inheriting from this class is handled by the SWX
     logger. This warning should not be issued in normal code. Use
-    "SpaceWeatherUserWarning" instead or a specific sub-class.
+    "SWXUserWarning" instead or a specific sub-class.
     """
 
 
-class SpaceWeatherUserWarning(UserWarning, SpaceWeatherWarning):
+class SWXUserWarning(UserWarning, SWXWarning):
     """
     The primary warning class for SWxSOC.
 
@@ -37,15 +37,13 @@ class SpaceWeatherUserWarning(UserWarning, SpaceWeatherWarning):
     """
 
 
-class SpaceWeatherDeprecationWarning(FutureWarning, SpaceWeatherWarning):
+class SWXDeprecationWarning(FutureWarning, SWXWarning):
     """
     A warning class to indicate a deprecated feature.
     """
 
 
-class SpaceWeatherPendingDeprecationWarning(
-    PendingDeprecationWarning, SpaceWeatherWarning
-):
+class SWXPendingDeprecationWarning(PendingDeprecationWarning, SWXWarning):
     """
     A warning class to indicate a soon-to-be deprecated feature.
     """
@@ -53,7 +51,7 @@ class SpaceWeatherPendingDeprecationWarning(
 
 def warn_user(msg, stacklevel=1):
     """
-    Raise a `SpaceWeatherUserWarning`.
+    Raise a `SWXUserWarning`.
 
     Parameters
     ----------
@@ -64,12 +62,12 @@ def warn_user(msg, stacklevel=1):
         e.g. ``stacklevel=1`` (the default) sets the stack level in the
         code that calls this function.
     """
-    warnings.warn(msg, SpaceWeatherUserWarning, stacklevel + 1)
+    warnings.warn(msg, SWXUserWarning, stacklevel + 1)
 
 
 def warn_deprecated(msg, stacklevel=1):
     """
-    Raise a `SpaceWeatherDeprecationWarning`.
+    Raise a `SWXDeprecationWarning`.
 
     Parameters
     ----------
@@ -80,4 +78,4 @@ def warn_deprecated(msg, stacklevel=1):
         e.g. ``stacklevel=1`` (the default) sets the stack level in the
         code that calls this function.
     """
-    warnings.warn(msg, SpaceWeatherDeprecationWarning, stacklevel + 1)
+    warnings.warn(msg, SWXDeprecationWarning, stacklevel + 1)

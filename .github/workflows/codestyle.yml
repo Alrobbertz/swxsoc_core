@@ -36,8 +36,8 @@ jobs:
         python -m pip install -e '.[style]'
     - name: Lint with Black
       run: |
-        black --check --diff swxsoc_core
+        black --check --diff swxsoc
     - name: flake8
       run: |
-        flake8 --count swxsoc_core
+        flake8 --count swxsoc
 

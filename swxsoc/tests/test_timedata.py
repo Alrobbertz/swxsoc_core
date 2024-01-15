@@ -16,9 +16,9 @@ from astropy.wcs import WCS
 from ndcube import NDCube, NDCollection
 from spacepy.pycdf import CDF, CDFError
 from matplotlib.axes import Axes
-from swxsoc_core.timedata import SpaceWeatherData
-from swxsoc_core.util.schema import SpaceWeatherDataSchema
-from swxsoc_core.util.validation import validate
+from swxsoc.swxdata import SWXData
+from swxsoc.util.schema import SWXSchema
+from swxsoc.util.validation import validate
 
 
 def get_bad_timeseries():
@@ -66,7 +66,7 @@ def get_test_timeseries():
 
 def get_test_sw_data():
     """
-    Function to get test swxsoc_core.timedata.SpaceWeatherData objects to re-use in other tests
+    Function to get test swxsoc.swxdata.SWXData objects to re-use in other tests
     """
 
     # Astropy TimeSeries
@@ -75,6 +75,7 @@ def get_test_sw_data():
         time_delta=3 * u.s,
         data={"Bx": Quantity([1, 2, 3, 4], "gauss", dtype=np.uint16)},
     )
+    ts["time"].meta = OrderedDict({"CATDESC": "Epoch Time", "VAR_TYPE": "support_data"})
 
     # Support Data / Non-Time Varying Data
     support = {"support_counts": NDData(data=[1])}
@@ -95,12 +96,10 @@ def get_test_sw_data():
     )
 
     # Global Metadata Attributes
-    input_attrs = SpaceWeatherData.global_attribute_template("eea", "l1", "1.0.0")
+    input_attrs = SWXData.global_attribute_template("eea", "l1", "1.0.0")
 
-    # Create SpaceWeatherData Object
-    sw_data = SpaceWeatherData(
-        timeseries=ts, support=support, spectra=spectra, meta=input_attrs
-    )
+    # Create SWXData Object
+    sw_data = SWXData(timeseries=ts, support=support, spectra=spectra, meta=input_attrs)
     sw_data.timeseries["Bx"].meta.update({"CATDESC": "Test"})
     return sw_data
 
@@ -110,7 +109,7 @@ def test_non_timeseries():
     Test Asserts the `timeseries` parameter must accept an astropy.timeseries.TimeSeries
     """
     with pytest.raises(TypeError):
-        _ = SpaceWeatherData(timeseries=[], meta={})
+        _ = SWXData(timeseries=[], meta={})
 
 
 def test_sw_data_empty_ts():
@@ -119,7 +118,7 @@ def test_sw_data_empty_ts():
     that includes `Time` and at least one other measurement.
     """
     with pytest.raises(ValueError):
-        _ = SpaceWeatherData(timeseries=TimeSeries())
+        _ = SWXData(timeseries=TimeSeries())
 
 
 def test_sw_data_single_column():
@@ -131,10 +130,10 @@ def test_sw_data_single_column():
     ts["time"] = time_col
 
     # Meta
-    input_attrs = SpaceWeatherData.global_attribute_template("eea", "l1", "1.0.0")
+    input_attrs = SWXData.global_attribute_template("eea", "l1", "1.0.0")
 
     # Create TimeSeries with only Time - no measurements
-    sw_data = SpaceWeatherData(timeseries=ts, meta=input_attrs)
+    sw_data = SWXData(timeseries=ts, meta=input_attrs)
 
     assert len(sw_data.timeseries.columns) == 1
 
@@ -146,12 +145,12 @@ def test_sw_data_bad_ts():
     """
     ts = get_bad_timeseries()
     with pytest.raises(TypeError):
-        _ = SpaceWeatherData(timeseries=ts)
+        _ = SWXData(timeseries=ts)
 
 
 def test_sw_data_default():
     """
-    Test asserts that a SpaceWeatherData object is created with the minimal set of required
+    Test asserts that a SWXData object is created with the minimal set of required
     global metadata: Descriptor, Data_level, Data_version.
     """
     ts = get_test_timeseries()
@@ -160,7 +159,7 @@ def test_sw_data_default():
         # We expect this to throw an error that the Instrument is not recognized.
         # The Instrument is one of the attributes required for generating the filename
         # Initialize a CDF File Wrapper
-        test_data = SpaceWeatherData(ts)
+        test_data = SWXData(ts)
 
     # Test Deleting the Writer
     del ts
@@ -172,7 +171,7 @@ def test_sw_data_missing_descriptor():
 
     with pytest.raises(ValueError) as excinfo:
         # We expect this to throw an error that 'Descriptor' is required
-        _ = SpaceWeatherData(ts, meta=input_attrs)
+        _ = SWXData(ts, meta=input_attrs)
 
         assert str(excinfo.value) == "'Descriptor' global meta attribute is required."
 
@@ -182,11 +181,11 @@ def test_sw_data_missing_descriptor():
 
 def test_sw_data_missing_data_level():
     ts = get_test_timeseries()
-    input_attrs = SpaceWeatherData.global_attribute_template("eea")
+    input_attrs = SWXData.global_attribute_template("eea")
 
     with pytest.raises(ValueError) as excinfo:
         # We expect this to throw an error that 'Descriptor' is required
-        _ = SpaceWeatherData(ts, meta=input_attrs)
+        _ = SWXData(ts, meta=input_attrs)
 
         assert str(excinfo.value) == "'Data_level' global meta attribute is required."
 
@@ -196,11 +195,11 @@ def test_sw_data_missing_data_level():
 
 def test_sw_data_missing_data_version():
     ts = get_test_timeseries()
-    input_attrs = SpaceWeatherData.global_attribute_template("eea", "l1")
+    input_attrs = SWXData.global_attribute_template("eea", "l1")
 
     with pytest.raises(ValueError) as excinfo:
         # We expect this to throw an error that 'Descriptor' is required
-        _ = SpaceWeatherData(ts, meta=input_attrs)
+        _ = SWXData(ts, meta=input_attrs)
 
         assert str(excinfo.value) == "'Data_version' global meta attribute is required."
 
@@ -222,14 +221,14 @@ def test_none_attributes():
 
 def test_multidimensional_timeseries():
     """
-    Test asserts that SpaceWeatherData cannot be created with multi-dimensional data in
+    Test asserts that SWXData cannot be created with multi-dimensional data in
     the astropy.timeseries.TimeSeries member
     """
     ts = get_test_timeseries()
     ts["var"] = Quantity(value=random(size=(10, 2)), unit="s", dtype=np.uint16)
 
     with pytest.raises(ValueError):
-        _ = SpaceWeatherData(ts)
+        _ = SWXData(ts)
 
 
 def test_support_data():
@@ -248,7 +247,7 @@ def test_support_data():
     # Bad Support
     support = {"support_var": [1]}
     with pytest.raises(TypeError):
-        _ = SpaceWeatherData(ts, support=support, meta=input_attrs)
+        _ = SWXData(ts, support=support, meta=input_attrs)
 
     # Support as NDData
     support = {}
@@ -257,8 +256,8 @@ def test_support_data():
     # Support as Quantity
     support["support_quantity"] = Quantity(value=[1], unit="count")
 
-    # Create SpaceWeatherData
-    test_data = SpaceWeatherData(ts, support=support, meta=input_attrs)
+    # Create SWXData
+    test_data = SWXData(ts, support=support, meta=input_attrs)
 
     assert "support_nddata" in test_data.support
     assert test_data.support["support_nddata"].data[0] == 1
@@ -282,7 +281,7 @@ def test_spectra_data():
     # Bad Spectra
     spectra = random(size=(10, 4))
     with pytest.raises(TypeError):
-        _ = SpaceWeatherData(ts, spectra=spectra, meta=input_attrs)
+        _ = SWXData(ts, spectra=spectra, meta=input_attrs)
 
     # Good Spectra
     spectra = NDCollection(
@@ -299,8 +298,8 @@ def test_spectra_data():
         ]
     )
 
-    # Create SpaceWeatherData
-    test_data = SpaceWeatherData(ts, spectra=spectra, meta=input_attrs)
+    # Create SWXData
+    test_data = SWXData(ts, spectra=spectra, meta=input_attrs)
 
     assert "test_spectra" in test_data.spectra
     assert test_data.spectra["test_spectra"].data.shape == (10, 10)
@@ -308,7 +307,7 @@ def test_spectra_data():
 
 def test_sw_data_valid_attrs():
     """
-    Test asserts that a minmally-defined SpaceWeatherData object can be created
+    Test asserts that a minmally-defined SWXData object can be created
     and saved to a CDF file.
     """
     # fmt: off
@@ -321,7 +320,7 @@ def test_sw_data_valid_attrs():
 
     ts = get_test_timeseries()
     # Initialize a CDF File Wrapper
-    test_data = SpaceWeatherData(ts, meta=input_attrs)
+    test_data = SWXData(ts, meta=input_attrs)
 
     # Convert the Wrapper to a CDF File
     with tempfile.TemporaryDirectory() as tmpdirname:
@@ -333,26 +332,26 @@ def test_sw_data_valid_attrs():
 
 def test_global_attribute_template():
     """
-    Test asserts that the SpaceWeatherData.global_attribute_template()
+    Test asserts that the SWXData.global_attribute_template()
     function can be used to create a minimal subset of required metadata
     """
     # default
-    assert isinstance(SpaceWeatherData.global_attribute_template(), OrderedDict)
+    assert isinstance(SWXData.global_attribute_template(), OrderedDict)
 
     # bad instrument
     with pytest.raises(ValueError):
-        _ = SpaceWeatherData.global_attribute_template(instr_name="test instrument")
+        _ = SWXData.global_attribute_template(instr_name="test instrument")
 
     # bad Data Level
     with pytest.raises(ValueError):
-        _ = SpaceWeatherData.global_attribute_template(data_level="data level")
+        _ = SWXData.global_attribute_template(data_level="data level")
 
     # bad version
     with pytest.raises(ValueError):
-        _ = SpaceWeatherData.global_attribute_template(version="000")
+        _ = SWXData.global_attribute_template(version="000")
 
     # good inputs
-    template = SpaceWeatherData.global_attribute_template(
+    template = SWXData.global_attribute_template(
         instr_name="eea", data_level="ql", version="1.3.6"
     )
     assert template["Descriptor"] == "EEA>Electron Electrostatic Analyzer"
@@ -362,7 +361,7 @@ def test_global_attribute_template():
 
 def test_default_properties():
     """
-    Test asserts the values of SpaceWeatherData class attributes.
+    Test asserts the values of SWXData class attributes.
     """
     # Initialize a CDF File Wrapper
     test_data = get_test_sw_data()
@@ -397,7 +396,7 @@ def test_default_properties():
 
 def test_sw_data_single_measurement():
     """
-    Test assers that a SpaceWeatherData object with a single added measurement
+    Test assers that a SWXData object with a single added measurement
     can be created and saved to a CDF file.
     """
     # fmt: off
@@ -410,7 +409,7 @@ def test_sw_data_single_measurement():
 
     ts = get_test_timeseries()
     # Initialize a CDF File Wrapper
-    test_data = SpaceWeatherData(ts, meta=input_attrs)
+    test_data = SWXData(ts, meta=input_attrs)
 
     # Add Measurement
     test_data.add_measurement("test_var1", Quantity(value=random(size=(10)), unit="km"))
@@ -429,7 +428,7 @@ def test_sw_data_single_measurement():
 
 def test_sw_data_add_measurement():
     """
-    Asserts the SpaceWeatherData.add_measurement() function adds data to the timeseries
+    Asserts the SWXData.add_measurement() function adds data to the timeseries
     member as expected.
     """
     # fmt: off
@@ -442,7 +441,7 @@ def test_sw_data_add_measurement():
 
     ts = get_test_timeseries()
     # Initialize a CDF File Wrapper
-    test_data = SpaceWeatherData(ts, meta=input_attrs)
+    test_data = SWXData(ts, meta=input_attrs)
     ts_len = len(test_data.timeseries.columns)
 
     # Add non-Quantity
@@ -499,7 +498,7 @@ def test_sw_data_add_support():
 
     ts = get_test_timeseries()
     # Initialize a CDF File Wrapper
-    test_data = SpaceWeatherData(ts, meta=input_attrs)
+    test_data = SWXData(ts, meta=input_attrs)
 
     # Add non-Quantity
     with pytest.raises(TypeError):
@@ -541,7 +540,7 @@ def test_sw_data_add_spectra():
 
     ts = get_test_timeseries()
     # Initialize a CDF File Wrapper
-    test_data = SpaceWeatherData(ts, meta=input_attrs)
+    test_data = SWXData(ts, meta=input_attrs)
 
     # Add non-NDCube
     with pytest.raises(TypeError):
@@ -588,7 +587,7 @@ def test_sw_data_add_spectra():
 
 def test_sw_data_plot():
     """
-    Test asserts the SpaceWeatherData.plot() function generates matplotlib
+    Test asserts the SWXData.plot() function generates matplotlib
     images as expected.
     """
     # fmt: off
@@ -602,7 +601,7 @@ def test_sw_data_plot():
 
     ts = get_test_timeseries()
     # Initialize a CDF File Wrapper
-    test_data = SpaceWeatherData(ts, meta=input_attrs)
+    test_data = SWXData(ts, meta=input_attrs)
     q = Quantity(value=random(size=(10)), unit="m", dtype=np.uint16)
     q.meta = OrderedDict({"CATDESC": "Test Variable"})
     test_data.add_measurement(measure_name="test", data=q)
@@ -621,7 +620,7 @@ def test_sw_data_plot():
 
 def test_sw_data_append():
     """
-    Test asserts the SpaceWeatherData.append() function adds to the TimeSeries member
+    Test asserts the SWXData.append() function adds to the TimeSeries member
     as expected.
     """
     # fmt: off
@@ -634,7 +633,7 @@ def test_sw_data_append():
 
     ts = get_test_timeseries()
     # Initialize a CDF File Wrapper
-    test_data = SpaceWeatherData(ts, meta=input_attrs)
+    test_data = SWXData(ts, meta=input_attrs)
 
     # Append Non-TimeSeries
     with pytest.raises(TypeError):
@@ -671,7 +670,7 @@ def test_sw_data_append():
 
 def test_sw_data_generate_valid_cdf():
     """
-    Test asserts the SpaceWeatherData data container can create an ISTP compliant CDF based on
+    Test asserts the SWXData data container can create an ISTP compliant CDF based on
     the spacepy.pycdf.istp module.
     """
     # fmt: off
@@ -723,7 +722,7 @@ def test_sw_data_generate_valid_cdf():
         )
     }
     # Initialize a CDF File Wrapper
-    test_data = SpaceWeatherData(ts, support=support, meta=input_attrs)
+    test_data = SWXData(ts, support=support, meta=input_attrs)
 
     # Add the Time column
     test_data.timeseries["time"].meta.update(
@@ -787,7 +786,7 @@ def test_sw_data_generate_valid_cdf():
 
 def test_sw_data_from_cdf():
     """
-    Test asserts that the SpaceWeatherData class can be created by loading a CDF file.
+    Test asserts that the SWXData class can be created by loading a CDF file.
     """
     # fmt: off
     input_attrs = {
@@ -838,7 +837,7 @@ def test_sw_data_from_cdf():
         )
     }
     # Initialize a CDF File Wrapper
-    test_data = SpaceWeatherData(ts, support=support, meta=input_attrs)
+    test_data = SWXData(ts, support=support, meta=input_attrs)
 
     # Add the Time column
     test_data.timeseries["time"].meta.update(
@@ -895,7 +894,7 @@ def test_sw_data_from_cdf():
         assert len(result) <= 1  # Logical Source and File ID Do not Agree
 
         # Try to Load the CDF File in a new CDFWriter
-        new_writer = SpaceWeatherData.load(test_file_output_path)
+        new_writer = SWXData.load(test_file_output_path)
 
         # Remove the Original File
         test_file_cache_path = Path(test_file_output_path)
@@ -912,7 +911,7 @@ def test_sw_data_from_cdf():
 
 def test_sw_data_idempotency():
     """
-    Test asserts that a SpaceWeatherData object that is saved and loaded does not have any
+    Test asserts that a SWXData object that is saved and loaded does not have any
     changes in it members, measurements, or metadata.
     """
     # fmt: off
@@ -952,7 +951,7 @@ def test_sw_data_idempotency():
         "TEXT": "Valid Test Case",
     }
     # fmt: on
-    # Generate a base SpaceWeatherData object
+    # Generate a base SWXData object
     test_data = get_test_sw_data()
     test_data.meta.update(input_attrs)
 
@@ -980,7 +979,7 @@ def test_sw_data_idempotency():
         test_file_output_path = test_data.save(output_path=tmpdirname)
 
         # Try loading the *Invalid* CDF File
-        loaded_data = SpaceWeatherData.load(test_file_output_path)
+        loaded_data = SWXData.load(test_file_output_path)
 
         assert len(test_data.timeseries.columns) == len(loaded_data.timeseries.columns)
         assert len(test_data.support) == len(loaded_data.support)
@@ -1013,7 +1012,7 @@ def test_sw_data_idempotency():
                 == loaded_data.support[var].meta["VAR_TYPE"]
             )
 
-        schema = SpaceWeatherDataSchema()
+        schema = SWXSchema()
         for var in test_data.spectra:
             assert var in loaded_data.spectra
             assert (
@@ -1090,7 +1089,7 @@ def test_bitlength_save_cdf(bitlength):
     }
     # fmt: on
 
-    sw_data = SpaceWeatherData(timeseries=ts, meta=input_attrs)
+    sw_data = SWXData(timeseries=ts, meta=input_attrs)
     sw_data.timeseries["Bx"].meta.update({"CATDESC": "Test"})
     with tempfile.TemporaryDirectory() as tmpdirname:
         test_file_output_path = sw_data.save(output_path=tmpdirname)
@@ -1154,7 +1153,7 @@ def test_overwrite_save():
 
 
 def test_without_cdf_lib():
-    """Function to test SpaceWeatherData Functions without the use of spacepy.pycdf libraries"""
+    """Function to test SWXData Functions without the use of spacepy.pycdf libraries"""
     # fmt: off
     input_attrs = {
         "DOI": "https://doi.org/<PREFIX>/<SUFFIX>",
@@ -1201,7 +1200,7 @@ def test_without_cdf_lib():
     pycdf.lib = None
 
     # Initialize a CDF File Wrapper
-    test_data = SpaceWeatherData(ts, meta=input_attrs)
+    test_data = SWXData(ts, meta=input_attrs)
 
     assert test_data.meta["CDF_Lib_version"] == "unknown version"
 

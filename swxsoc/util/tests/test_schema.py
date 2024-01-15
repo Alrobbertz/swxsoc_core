@@ -8,9 +8,9 @@ from astropy.timeseries import TimeSeries
 from astropy.table import Table
 import astropy.units as u
 from spacepy.pycdf import CDF
-from swxsoc_core.timedata import SpaceWeatherData
-from swxsoc_core.util.schema import SpaceWeatherDataSchema
-from swxsoc_core.util import const
+from swxsoc.swxdata import SWXData
+from swxsoc.util.schema import SWXSchema
+from swxsoc.util import const
 
 
 def get_test_sw_data():
@@ -44,13 +44,13 @@ def get_test_sw_data():
             "CATDESC": "Test Data",
         }
     )
-    sw_data = SpaceWeatherData(timeseries=ts)
+    sw_data = SWXData(timeseries=ts)
     return sw_data
 
 
 def test_sw_data_schema():
     """Test Schema Template and Info Functions"""
-    schema = SpaceWeatherDataSchema()
+    schema = SWXSchema()
 
     # Global Attribute Schema
     assert schema.global_attribute_schema is not None
@@ -102,7 +102,7 @@ def test_load_yaml_data():
             file.write(invalid_yaml)
 
         # Load from an non-existant file
-        yaml_data = SpaceWeatherDataSchema()._load_yaml_data(tmpdirname + "test.yaml")
+        yaml_data = SWXSchema()._load_yaml_data(tmpdirname + "test.yaml")
         assert yaml_data == {}
 
 
@@ -123,10 +123,10 @@ def test_global_attributes():
             "CATDESC": "Test Data",
         }
     )
-    template = SpaceWeatherData.global_attribute_template("eea", "l2", "0.0.0")
+    template = SWXData.global_attribute_template("eea", "l2", "0.0.0")
 
-    # Create SpaceWeatherData
-    td = SpaceWeatherData(timeseries=ts, meta=template)
+    # Create SWXData
+    td = SWXData(timeseries=ts, meta=template)
     assert isinstance(td.meta, OrderedDict)
 
 
@@ -136,24 +136,24 @@ def test_check_well_formed():
     # Badly Shaped Data
     data = [np.array([1, 2, 3]), np.array([[4, 5], [6, 7]])]
     with pytest.raises(ValueError):
-        _ = SpaceWeatherDataSchema._check_well_formed(data)
+        _ = SWXSchema._check_well_formed(data)
 
     # Empty Data
     data = np.array([], dtype=object)
-    d = SpaceWeatherDataSchema._check_well_formed(data)
+    d = SWXSchema._check_well_formed(data)
     assert len(d) == 0
 
     # Badly Shaped Object
     data = np.array([np.array([1, 2, 3]), np.array([[4, 5], [6, 7]])], dtype=object)
     with pytest.raises(ValueError):
-        _ = SpaceWeatherDataSchema._check_well_formed(data)
+        _ = SWXSchema._check_well_formed(data)
 
 
 def test_types():
     """Function to test getting the CDF data types for different data types"""
 
     # String Type
-    _, types, _ = SpaceWeatherDataSchema()._types("")
+    _, types, _ = SWXSchema()._types("")
     assert types == [51, 52]
 
 
@@ -281,27 +281,27 @@ def test_type_guessing():
         ((1,), [const.CDF_CHAR, const.CDF_UCHAR], 8),
     ]
     with pytest.raises(ValueError):
-        SpaceWeatherDataSchema()._types([object()])
+        SWXSchema()._types([object()])
     for s, t in zip(samples, types):
         t = (t[0], [i.value for i in t[1]], t[2])
-        assert t == SpaceWeatherDataSchema()._types(s)
+        assert t == SWXSchema()._types(s)
 
 
 def test_min_max_none():
     """Get min/max values for None types"""
     with pytest.raises(ValueError):
-        SpaceWeatherDataSchema()._get_minmax(None)
+        SWXSchema()._get_minmax(None)
 
 
 def test_min_max_unknown():
     """Get min/max values for unknown types"""
     with pytest.raises(ValueError):
-        SpaceWeatherDataSchema()._get_minmax("unknown_type")
+        SWXSchema()._get_minmax("unknown_type")
 
 
 def test_min_max_TT2000():
     """Get min/max values for TT2000 types"""
-    minval, maxval = SpaceWeatherDataSchema()._get_minmax(const.CDF_TIME_TT2000)
+    minval, maxval = SWXSchema()._get_minmax(const.CDF_TIME_TT2000)
     # Make sure the minimum isn't just plain invalid
     assert minval == Time("1900-1-1T00:00:00.000", format="isot")
     assert maxval == Time("2250-1-1T00:00:00.000", format="isot")
@@ -309,7 +309,7 @@ def test_min_max_TT2000():
 
 def test_min_max_Epoch16():
     """Get min/max values for Epoch16 types"""
-    minval, maxval = SpaceWeatherDataSchema()._get_minmax(const.CDF_EPOCH16)
+    minval, maxval = SWXSchema()._get_minmax(const.CDF_EPOCH16)
     # Make sure the minimum isn't just plain invalid
     assert minval == Time("1900-1-1T00:00:00.000", format="isot")
     assert maxval == Time("2250-1-1T00:00:00.000", format="isot")
@@ -317,7 +317,7 @@ def test_min_max_Epoch16():
 
 def test_min_max_Epoch():
     """Get min/max values for EPOCH types"""
-    minval, maxval = SpaceWeatherDataSchema()._get_minmax(const.CDF_EPOCH)
+    minval, maxval = SWXSchema()._get_minmax(const.CDF_EPOCH)
     # Make sure the minimum isn't just plain invalid
     assert minval == Time("1900-1-1T00:00:00.000", format="isot")
     assert maxval == Time("2250-1-1T00:00:00.000", format="isot")
@@ -325,14 +325,14 @@ def test_min_max_Epoch():
 
 def test_min_max_Float():
     """Get min/max values for a float"""
-    minval, maxval = SpaceWeatherDataSchema()._get_minmax(const.CDF_FLOAT)
+    minval, maxval = SWXSchema()._get_minmax(const.CDF_FLOAT)
     np.allclose(-3.4028234663853e38, minval)
     np.allclose(3.4028234663853e38, maxval)
 
 
 def test_min_max_Int():
     """Get min/max values for an integer"""
-    minval, maxval = SpaceWeatherDataSchema()._get_minmax(const.CDF_INT1)
+    minval, maxval = SWXSchema()._get_minmax(const.CDF_INT1)
     assert -128 == minval
     assert 127 == maxval
 
@@ -370,25 +370,23 @@ def test_format():
                 v.attrs["VALIDMIN"] = vmin
             if vmin is not None:
                 v.attrs["VALIDMAX"] = vmax
-            format = SpaceWeatherDataSchema()._get_format("var", cdf["var"], t)
+            format = SWXSchema()._get_format("var", cdf["var"], t)
             assert e == format
             del cdf["var"]
 
         # Test Format Char
         v = cdf.new("var", data=["hi", "there"])
-        format = SpaceWeatherDataSchema()._get_format(
-            "var", cdf["var"], const.CDF_CHAR.value
-        )
+        format = SWXSchema()._get_format("var", cdf["var"], const.CDF_CHAR.value)
         assert "A2" == format
 
 
 def test_si_conversion():
     """Test the SI Units Conversion"""
-    # Get Test SpaceWeatherData
+    # Get Test SWXData
     test_data = get_test_sw_data()
     # Default in Test Data "m"
     assert (
-        SpaceWeatherDataSchema()._get_si_conversion(
+        SWXSchema()._get_si_conversion(
             "measurement", test_data.timeseries["measurement"], 0
         )
         == "1.000000e+00>m"
@@ -402,13 +400,11 @@ def test_si_conversion():
         ),
     )
     assert (
-        SpaceWeatherDataSchema()._get_units(
-            "measurement1", test_data.timeseries["measurement1"], 0
-        )
+        SWXSchema()._get_units("measurement1", test_data.timeseries["measurement1"], 0)
         == ""
     )
     assert (
-        SpaceWeatherDataSchema()._get_si_conversion(
+        SWXSchema()._get_si_conversion(
             "measurement1", test_data.timeseries["measurement1"], 0
         )
         == "1.000000e+00>"
@@ -420,13 +416,11 @@ def test_si_conversion():
         data=u.Quantity(value=random(size=(10)), unit=u.ct, dtype=np.uint16),
     )
     assert (
-        SpaceWeatherDataSchema()._get_units(
-            "measurement2", test_data.timeseries["measurement2"], 0
-        )
+        SWXSchema()._get_units("measurement2", test_data.timeseries["measurement2"], 0)
         == "ct"
     )
     assert (
-        SpaceWeatherDataSchema()._get_si_conversion(
+        SWXSchema()._get_si_conversion(
             "measurement2", test_data.timeseries["measurement2"], 0
         )
         == "1.0>ct"
@@ -440,7 +434,7 @@ def test_resolution():
     time = np.arange(1)
     time_col = Time(time, format="unix")
     ts["time"] = time_col
-    ts["time"].meta = OrderedDict({"CATDESC": "Epoch Time"})
+    ts["time"].meta = OrderedDict({"CATDESC": "Epoch Time", "VAR_TYPE": "support_data"})
 
     # Add Measurement
     quant = u.Quantity(value=random(size=(1)), unit="m", dtype=np.uint16)
@@ -451,48 +445,46 @@ def test_resolution():
             "CATDESC": "Test Data",
         }
     )
-    template = SpaceWeatherData.global_attribute_template("eea", "l2", "0.0.0")
+    template = SWXData.global_attribute_template("eea", "l2", "0.0.0")
 
     # Get Resolution
     with pytest.raises(ValueError):
-        td = SpaceWeatherData(timeseries=ts, meta=template)
+        td = SWXData(timeseries=ts, meta=template)
 
 
 def test_reference_position():
     """Function to test time reference position"""
     assert (
-        SpaceWeatherDataSchema()._get_reference_position(const.CDF_TIME_TT2000.value)
+        SWXSchema()._get_reference_position(const.CDF_TIME_TT2000.value)
         == "rotating Earth geoid"
     )
 
     with pytest.raises(TypeError):
-        SpaceWeatherDataSchema()._get_reference_position(const.CDF_EPOCH.value)
+        SWXSchema()._get_reference_position(const.CDF_EPOCH.value)
 
 
 def test_time_base():
     """Function to test time base"""
-    assert (
-        SpaceWeatherDataSchema()._get_time_base(const.CDF_TIME_TT2000.value) == "J2000"
-    )
+    assert SWXSchema()._get_time_base(const.CDF_TIME_TT2000.value) == "J2000"
 
     with pytest.raises(TypeError):
-        SpaceWeatherDataSchema()._get_time_base(const.CDF_EPOCH.value)
+        SWXSchema()._get_time_base(const.CDF_EPOCH.value)
 
 
 def test_time_scale():
     """Function to test time scale"""
     assert (
-        SpaceWeatherDataSchema()._get_time_scale(const.CDF_TIME_TT2000.value)
+        SWXSchema()._get_time_scale(const.CDF_TIME_TT2000.value)
         == "Terrestrial Time (TT)"
     )
 
     with pytest.raises(TypeError):
-        SpaceWeatherDataSchema()._get_time_scale(const.CDF_EPOCH.value)
+        SWXSchema()._get_time_scale(const.CDF_EPOCH.value)
 
 
 def test_time_units():
     """Function to test time units"""
-    assert SpaceWeatherDataSchema()._get_time_units(const.CDF_TIME_TT2000.value) == "ns"
+    assert SWXSchema()._get_time_units(const.CDF_TIME_TT2000.value) == "ns"
 
     with pytest.raises(TypeError):
-        SpaceWeatherDataSchema()._get_time_units(const.CDF_EPOCH.value)
+        SWXSchema()._get_time_units(const.CDF_EPOCH.value)

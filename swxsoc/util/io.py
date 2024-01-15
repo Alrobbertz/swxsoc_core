@@ -10,8 +10,8 @@ from astropy.wcs import WCS
 import astropy.units as u
 from ndcube import NDCollection
 from ndcube import NDCube
-from swxsoc_core.util.exceptions import warn_user
-from swxsoc_core.util.schema import SpaceWeatherDataSchema
+from swxsoc.util.exceptions import warn_user
+from swxsoc.util.schema import SWXSchema
 
 __all__ = ["CDFHandler"]
 
@@ -20,7 +20,7 @@ __all__ = ["CDFHandler"]
 # ================================================================================================
 
 
-class SpaceWeatherDataIOHandler(ABC):
+class SWXIOHandler(ABC):
     """
     Abstract base class for handling input/output operations of heliophysics data.
     """
@@ -53,8 +53,8 @@ class SpaceWeatherDataIOHandler(ABC):
 
         Parameters
         ----------
-        data : `swxsoc_core.timedata.SpaceWeatherData`
-            An instance of `SpaceWeatherData` containing the data to be saved.
+        data : `swxsoc.swxdata.SWXData`
+            An instance of `SWXData` containing the data to be saved.
         file_path : `str`
             The fully specified file path to save into.
         """
@@ -66,9 +66,9 @@ class SpaceWeatherDataIOHandler(ABC):
 # ================================================================================================
 
 
-class CDFHandler(SpaceWeatherDataIOHandler):
+class CDFHandler(SWXIOHandler):
     """
-    A concrete implementation of SpaceWeatherDataIOHandler for handling heliophysics data in CDF format.
+    A concrete implementation of SWXIOHandler for handling heliophysics data in CDF format.
 
     This class provides methods to load and save heliophysics data from/to a CDF file.
     """
@@ -77,7 +77,7 @@ class CDFHandler(SpaceWeatherDataIOHandler):
         super().__init__()
 
         # CDF Schema
-        self.schema = SpaceWeatherDataSchema()
+        self.schema = SWXSchema()
 
     def load_data(self, file_path: str) -> Tuple[TimeSeries, dict]:
         """
@@ -315,8 +315,8 @@ class CDFHandler(SpaceWeatherDataIOHandler):
 
         Parameters
         ----------
-        data : `swxsoc_core.timedata.SpaceWeatherData`
-            An instance of `SpaceWeatherData` containing the data to be saved.
+        data : `swxsoc.swxdata.SWXData`
+            An instance of `SWXData` containing the data to be saved.
         file_path : `str`
             The path to save the CDF file.
 

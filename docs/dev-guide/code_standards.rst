@@ -13,7 +13,7 @@ We try to closely follow the coding style and conventions proposed by `Astropy <
 Language Standard
 =================
 
-* All code must be compatible with Python 3.7 and later.
+* All code must be compatible with Python 3.9 and later.
 
 * The new Python 3 formatting style should be used (i.e.
   ``f"{spam:s}"`` instead of ``"%s" % "spam"``).
@@ -153,7 +153,7 @@ Any other standard output, warnings, and errors should follow these rules:
 * For errors/exceptions, one should always use ``raise`` with one of the built-in exception classes, or a custom exception class (e.g. ValueError, TypeError).
   The nondescript ``Exception`` class should be avoided as much as possible, in favor of more specific exceptions (`IOError`, `ValueError`, etc.).
 
-* For warnings, use the appropriate custom warning classes (e.g. `swxsoc_core.util.exceptions.SpaceWeatherWarning`, `swxsoc_core.util.exceptions.SpaceWeatherUserWarning`) to enable them to be captured by the logging system.
+* For warnings, use the appropriate custom warning classes (e.g. `swxsoc.util.exceptions.SWXWarning`, `swxsoc.util.exceptions.SWXUserWarning`) to enable them to be captured by the logging system.
 
 * For debug messages, use the logging system `log.debug()` with a descriptive message.
   Remember that users may access those messages as well.

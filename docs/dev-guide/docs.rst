@@ -20,9 +20,9 @@ To link to other methods, classes, or modules in your repo you have to use backt
 
 .. code-block:: rst
 
-    `swxsoc_core.io.read_file`
+    `swxsoc.io.read_file`
 
-generates a link like this: `swxsoc_core.io.read_file`.
+generates a link like this: `swxsoc.io.read_file`.
 
 Other packages can also be linked via
 `intersphinx <http://www.sphinx-doc.org/en/master/ext/intersphinx.html>`_:

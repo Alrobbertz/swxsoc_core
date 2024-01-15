@@ -8,10 +8,10 @@ from contextlib import redirect_stdout
 
 import pytest
 
-import swxsoc_core
-from swxsoc_core import config
-from swxsoc_core.util import SpaceWeatherWarning
-from swxsoc_core.util.config import (
+import swxsoc
+from swxsoc import config
+from swxsoc.util import SWXWarning
+from swxsoc.util.config import (
     CONFIG_DIR,
     _find_config_files,
     _get_user_configdir,

@@ -1,62 +1,62 @@
 .. _reading_writing_data:
 
-*******************************
-Opening and Writing HERMES Data
-*******************************
+*******************************************
+Opening and Writing SWxSOC Aaffiliated Data
+*******************************************
 
 Overview
 ========
 
-The :py:class:`~swxsoc_core.timedata.SpaceWeatherData` class provides a convenient and efficient way to work with HERMES science CDF data files.
-The point of this class is to simplify data management, enhances data discovery, and facilitates adherence to CDF standards.
+The :py:class:`~swxsoc.swxdata.SWXData` class provides a convenient and efficient way to work with SWxSOC affiliated mission science CDF data files.
+The point of this class is to simplify data management, enhance data discovery, and facilitate adherence to CDF standards.
 
-`CDF (Common Data Format) <https://cdf.gsfc.nasa.gov>`_ files are a binary file format commonly used by NASA scientific research to store and exchange data. They provide a flexible structure for organizing and representing multidimensional datasets along with associated metadata. CDF files are widely used in space physics. Because of their versatility, CDF files can be complex.
-CDF standards exist to make it easier to work with these files.
+`CDF (Common Data Format) <https://cdf.gsfc.nasa.gov>`_ files are a binary file format commonly used by NASA scientific research to store and exchange data. 
+They provide a flexible structure for organizing and representing multidimensional datasets along with associated metadata. 
+CDF files are widely used in space physics. Because of their versatility, CDF files can be complex. CDF standards exist to make it easier to work with these files.
 `International Solar-Terrestrial Physics (ISTP) <https://spdf.gsfc.nasa.gov/istp_guide/vattributes.html#VAR_TYPE>`_ compliance is a set of standards defined by the Space Physics Data Facility (SPDF).
 ISTP compliance ensures that the data adheres to specific formatting requirements, quality control measures, and documentation standards.
 Uploading CDF files to the `NASA SPDF archive <https://spdf.gsfc.nasa.gov>`_ requires conforming to the ISTP guidelines.
-In addition, HERMES maintains it's own standards in the CDF guide.
 
 The CDF C library must be properly installed in order to use this package to save and load CDF files. 
 The CDF library can be downloaded from the `SPDF CDF Page <https://cdf.gsfc.nasa.gov/>`_ to use the 
 CDF libraries in your local environment. Alternatively, the CDF library is installed and available
-through the HERMES development Docker container environment. For more information on the HERMES Docker
+through the development Docker container environment. For more information on the Docker
 container please see our :doc:`Development Environment Page </dev-guide/dev_env>`.
 
-To make it easier to work with HERMES data, the :py:class:`~swxsoc_core.timedata.SpaceWeatherData` class facilitates the abstraction of HERMES CDF files.
-It allows users to read and write HERMES data and is compliant with `PyHC expectations <https://heliopython.org>`_.
-The data is stored in a `~astropy.timeseries.TimeSeries` table while the metadata is stored in dictionaries.
-`~astropy.timeseries.TimeSeries` is a Python class for handling scientific time series data that provides a convenient and familiar interface for working with tabular data.
-By loading the contents of a CDF file into a `~astropy.timeseries.TimeSeries` table, it becomes easier to manipulate, analyze, and visualize the data.
-Additionally, metadata attributes can be associated with the table, allowing for enhanced documentation and data discovery.
-The :py:class:`~swxsoc_core.timedata.SpaceWeatherData` class aims to provide a simplified interface to reading and writing HERMES data and metadata to CDF files while automatically handling the complexities of the underlying CDF file format.
+To make it easier to work with SWxSOC affiliated mission data, the :py:class:`~swxsoc.swxdata.SWXData` class facilitates the abstraction of CDF files.
+It allows users to read and write instrument data and is compliant with `PyHC expectations <https://heliopython.org>`_.
+Data is stored in a combination of `~astropy.timeseries.TimeSeries`, `~astropy.nddata.NDData`, and `~ndcube.NDCollection` objects. 
+Metadata is stored in dictionaries, with a dataset level `dict` for global metadata, and variable-level `dict`s for variable attributes. 
+By loading the contents of a CDF file into these data structures, it becomes easier to manipulate, analyze, and visualize the data.
+Additionally, metadata attributes associated with the table allow for enhanced documentation and data discovery.
+The :py:class:`~swxsoc.swxdata.SWXData` class aims to provide a simplified interface to reading and writing data and metadata to CDF files while automatically handling the complexities of the underlying CDF file format.
 
-Creating a ``SpaceWeatherData`` object
-======================================
+Creating a ``SWXData`` object
+=============================
 
-Creating a :py:class:`~swxsoc_core.timedata.SpaceWeatherData` data container from scratch involves four 
+Creating a :py:class:`~swxsoc.swxdata.SWXData` data container from scratch involves four 
 pieces of data:
 
 - `timeseries` (required) - an `~astropy.timeseries.TimeSeries` containing the time dimension of 
     the data as well as at least one other measurement. This data structure must be used for all 
-    scalar time-varying measurement data. 
-- `spectra` (optional) - an `~ndcube.NDCollection` containing one or more `~ndcube.NDCube` objects
-    representing higher-dimensional measurements and spectral data. This data must should be used
-    for all vector or tensor-based measurement data. 
+    scalar time-varying measurement data.  
 - `support` (optional) - a `dict[astropy.nddata.NDdata | astropy.units.Quantity]` containing one
     or more non-time-varying (time invariant) measurements, time-invariant support or metadata
     variables. 
+- `spectra` (optional) - an `~ndcube.NDCollection` containing one or more `~ndcube.NDCube` objects
+    representing higher-dimensional measurements and spectral data. This data must should be used
+    for all vector or tensor-based measurement data.
 - `meta` (optional) - a `dict` containing global metadata information about the CDF. This data
     structure must be used for all global metadata required for ISTP compliance.  
 
 
-Alternatively, a :py:class:`~swxsoc_core.timedata.SpaceWeatherData` data container can be loaded from 
-an existing CDF file using the :py:func:`~swxsoc_core.timedata.SpaceWeatherData.load` function. 
+Alternatively, a :py:class:`~swxsoc.swxdata.SWXData` data container can be loaded from 
+an existing CDF file using the :py:func:`~swxsoc.swxdata.SWXData.load` function. 
 
-Creating a ``TimeSeries`` for ``SpaceWeatherData`` `timeseries`
----------------------------------------------------------------
+Creating a ``TimeSeries`` for ``SWXData`` `timeseries`
+------------------------------------------------------
 
-A :py:class:`~swxsoc_core.timedata.SpaceWeatherData` must be initialized by providing a 
+A :py:class:`~swxsoc.swxdata.SWXData` must be initialized by providing a 
 `~astropy.timeseries.TimeSeries` object with at least one measurement. There are many ways to 
 initialize one but here is one example:
 
@@ -93,12 +93,12 @@ array directly
     ... )
 
 Note the use of `~astropy.time` and `astropy.units` which provide several advantages over using 
-arrays of numbers and are required by :py:class:`~swxsoc_core.timedata.SpaceWeatherData`.
+arrays of numbers and are required by :py:class:`~swxsoc.swxdata.SWXData`.
 
-Creating a ``NDCollection`` for ``SpaceWeatherData`` `spectra`
+Creating a ``NDCollection`` for ``SWXData`` `spectra`
 --------------------------------------------------------------
 
-The :py:class:`~swxsoc_core.timedata.SpaceWeatherData` object leverages API functionality of the 
+The :py:class:`~swxsoc.swxdata.SWXData` object leverages API functionality of the 
 `~ndcube` package to enable easier analysis of higher-dimensional and spectral data measurements. 
 The main advantage that this package provides in in it's handling of coordinate transformations 
 and slicing in real-world-coordinates compared to using index-based slicing for higher-dimensional
@@ -131,14 +131,14 @@ metadata attributes as a `dict`, and an `~astropy.units` unit that is used to tr
 array  as an `~astropy.units.Quantity`.
 
 
-Creating a ``dict`` for ``SpaceWeatherData`` `support`
+Creating a ``dict`` for ``SWXData`` `support`
 ------------------------------------------------------
 
-The :py:class:`~swxsoc_core.timedata.SpaceWeatherData` object also accepts additional arbitrary data 
+The :py:class:`~swxsoc.swxdata.SWXData` object also accepts additional arbitrary data 
 arrays, so-called non-record-varying (NRV) data, which is frequently support data. These data are 
 required to be a `dict` of :py:class:`~astropy.nddata.NDData` or 
 :py:class:`~astropy.units.Quantity` objects which are data containers for physical data. 
-The :py:class:`~swxsoc_core.timedata.SpaceWeatherData` class supports both `Quantity` and `NDData` 
+The :py:class:`~swxsoc.swxdata.SWXData` class supports both `Quantity` and `NDData` 
 objects since one may have advantages for the type of data being represented: `Quantity` 
 objects in this support `dict` may be more advantageous for scalar or 1D-vector data while 
 `NDData` objects in this support `dict` may be more advantageous for higher-dimensional vector 
@@ -153,14 +153,14 @@ data. A guide to the `~astropy.nddata` package is available in the
     ... }
 
 Metadata passed in through the :py:class:`~astropy.nddata.NDData` object is used by 
-:py:class:`~swxsoc_core.timedata.SpaceWeatherData` as variable metadata attributes required for ISTP 
+:py:class:`~swxsoc.swxdata.SWXData` as variable metadata attributes required for ISTP 
 compliance. 
 
-Creating a ``dict`` for ``SpaceWeatherData`` `meta`
+Creating a ``dict`` for ``SWXData`` `meta`
 ---------------------------------------------------
 
 You must create a `dict` or `~collections.OrderedDict` containing the required CDF global metadata.
-The class function :py:func:`~swxsoc_core.timedata.SpaceWeatherData.global_attribute_template` will 
+The class function :py:func:`~swxsoc.swxdata.SWXData.global_attribute_template` will 
 provide you an empty version that you can fill in. Here is an example with filled in values.
 
     >>> input_attrs = {
@@ -198,21 +198,21 @@ provide you an empty version that you can fill in. Here is an example with fille
     ...     "TEXT": "Valid Test Case",
     ... }
 
-Here is an example using the :py:func:`~swxsoc_core.timedata.SpaceWeatherData.global_attribute_template`
+Here is an example using the :py:func:`~swxsoc.swxdata.SWXData.global_attribute_template`
 function to create a minimal subset of global metadata attributes:
 
-    >>> from swxsoc_core.timedata import SpaceWeatherData
-    >>> input_attrs = SpaceWeatherData.global_attribute_template("eea", "l1", "1.0.0")
+    >>> from swxsoc.swxdata import SWXData
+    >>> input_attrs = SWXData.global_attribute_template("eea", "l1", "1.0.0")
 
 
-Using Defined Elements to create a ``SpaceWeatherData`` Data Container
+Using Defined Elements to create a ``SWXData`` Data Container
 ----------------------------------------------------------------------
 
-Putting it all together here is instantiation of a :py:class:`~swxsoc_core.timedata.SpaceWeatherData`
+Putting it all together here is instantiation of a :py:class:`~swxsoc.swxdata.SWXData`
 object: 
 
-    >>> from swxsoc_core.timedata import SpaceWeatherData
-    >>> sw_data = SpaceWeatherData(
+    >>> from swxsoc.swxdata import SWXData
+    >>> sw_data = SWXData(
     ...     timeseries=ts, 
     ...     support=support_data, 
     ...     spectra=spectra, 
@@ -226,7 +226,7 @@ For a complete example with instantiation of all objects in one code example:
     >>> from astropy.timeseries import TimeSeries
     >>> from ndcube import NDCube, NDCollection
     >>> from astropy.nddata import NDData
-    >>> from swxsoc_core.timedata import SpaceWeatherData
+    >>> from swxsoc.swxdata import SWXData
     >>> # Create a TimeSeries structure
     >>> data = u.Quantity([1, 2, 3, 4], "gauss", dtype=np.uint16)
     >>> ts = TimeSeries(time_start="2016-03-22T12:30:31", time_delta=3 * u.s, data={"Bx": data})
@@ -249,16 +249,16 @@ For a complete example with instantiation of all objects in one code example:
     ...     "data_mask": NDData(data=np.eye(100, 100, dtype=np.uint16))
     ... }
     >>> # Create Global Metadata Attributes
-    >>> input_attrs = SpaceWeatherData.global_attribute_template("eea", "l1", "1.0.0")
-    >>> # Create SpaceWeatherData Object
-    >>> sw_data = SpaceWeatherData(
+    >>> input_attrs = SWXData.global_attribute_template("eea", "l1", "1.0.0")
+    >>> # Create SWXData Object
+    >>> sw_data = SWXData(
     ...     timeseries=ts, 
     ...     support=support_data, 
     ...     spectra=spectra, 
     ...     meta=input_attrs
     ... )
 
-The :py:class:`~swxsoc_core.timedata.SpaceWeatherData` is mutable so you can edit it, add another 
+The :py:class:`~swxsoc.swxdata.SWXData` is mutable so you can edit it, add another 
 measurement column or edit the metadata after the fact. Your variable metadata can be found 
 by querying the measurement column directly.
 
@@ -272,17 +272,17 @@ cannot. Those should be filled in manually. Be careful when editing metadata tha
 automatically generated as you might make the resulting CDF file non-compliant.
 
 
-Creating a ``SpaceWeatherData`` from an existing CDF File
+Creating a ``SWXData`` from an existing CDF File
 =========================================================
 
-Given a current CDF File you can load it into a :py:class:`~swxsoc_core.timedata.SpaceWeatherData` by providing a path to the CDF file::
+Given a current CDF File you can load it into a :py:class:`~swxsoc.swxdata.SWXData` by providing a path to the CDF file::
 
-    >>> from swxsoc_core.timedata import SpaceWeatherData
-    >>> sw_data = SpaceWeatherData.load("hermes_eea_default_ql_20240406T120621_v0.0.1.cdf") # doctest: +SKIP
+    >>> from swxsoc.swxdata import SWXData
+    >>> sw_data = SWXData.load("hermes_eea_default_ql_20240406T120621_v0.0.1.cdf") # doctest: +SKIP
 
-The :py:class:`~swxsoc_core.timedata.SpaceWeatherData` can the be updated, measurements added, metadata added, and written to a new CDF file.
+The :py:class:`~swxsoc.swxdata.SWXData` can the be updated, measurements added, metadata added, and written to a new CDF file.
 
-Adding data to a ``SpaceWeatherData`` Container
+Adding data to a ``SWXData`` Container
 ===============================================
 
 A new set of measurements or support data can be added to an existing instance. Remember 
@@ -290,12 +290,12 @@ that new measurements must have the same time stamps as the existing ones and th
 the same number of entries. Support data can be added as needed.
 You can add the new measurements in one of two ways.
 
-The more explicit approach is to use :py:func:`~swxsoc_core.timedata.SpaceWeatherData.add_measurement` function::
+The more explicit approach is to use :py:func:`~swxsoc.swxdata.SWXData.add_measurement` function::
 
     >>> data = u.Quantity(np.arange(len(sw_data.timeseries['Bx'])), 'Gauss', dtype=np.uint16)
     >>> sw_data.add_measurement(measure_name="By", data=data, meta={"CATDESC": "Test Metadata"})
     
-To add non-time-varying support data use the :py:func:`~swxsoc_core.timedata.SpaceWeatherData.add_support` function::
+To add non-time-varying support data use the :py:func:`~swxsoc.swxdata.SWXData.add_support` function::
 
     >>> sw_data.add_support(
     ...     name="Calibration_const",
@@ -313,58 +313,57 @@ Adding metadata attributes
 ==========================
 
 Additional CDF file global metadata and variable metadata can be easily added to a 
-:py:class:`~swxsoc_core.timedata.SpaceWeatherData` data container. For more information about the required 
-metadata attributes please see the :doc:`HERMES CDF Format Guide </user-guide/cdf_format_guide>`
+:py:class:`~swxsoc.swxdata.SWXData` data container. For more information about the required 
+metadata attributes please see the :doc:`CDF Format Guide </user-guide/cdf_format_guide>`
 
 Global Metadata Attributes
 --------------------------
 
-Global metadata attributes can be updated for a :py:class:`~swxsoc_core.timedata.SpaceWeatherData` object 
-using the object's :py:attr:`~swxsoc_core.timedata.SpaceWeatherData.meta` parameter which is an 
+Global metadata attributes can be updated for a :py:class:`~swxsoc.swxdata.SWXData` object 
+using the object's :py:attr:`~swxsoc.swxdata.SWXData.meta` parameter which is an 
 `~collections.OrderedDict` containing all attributes. 
 
 Required Global Attributes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The :py:class:`~swxsoc_core.timedata.SpaceWeatherData` class requires several global metadata attributes 
+The :py:class:`~swxsoc.swxdata.SWXData` class requires several global metadata attributes 
 to be provided upon instantiation:
 
 - `Descriptor`
 - `Data_level`
 - `Data_version`
 
-A :py:class:`~swxsoc_core.timedata.SpaceWeatherData` container cannot be created without supplying at 
+A :py:class:`~swxsoc.swxdata.SWXData` container cannot be created without supplying at 
 lest this subset of global metadata attributes. For assistance in defining required global 
-attributes, please see the :py:func:`~swxsoc_core.timedata.SpaceWeatherData.global_attribute_template`
+attributes, please see the :py:func:`~swxsoc.swxdata.SWXData.global_attribute_template`
 function. 
 
 Derived Global Attributes
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The :py:class:`~swxsoc_core.util.schema.SpaceWeatherDataSchema` class derives several global metadata 
+The :py:class:`~swxsoc.util.schema.SWXSchema` class derives several global metadata 
 attributes required for ISTP compliance. The following global attributes are derived:
 
 - `CDF_Lib_version`
 - `Data_type`
 - `Generation_date`
-- `HERMES_version`
+- `swxsoc_version`
 - `Logical_file_id`
 - `Logical_source`
 - `Logical_source_description`
-- `Start_time`
 
 For more information about each of these attributes please see the 
-:doc:`HERMES CDF Format Guide </user-guide/cdf_format_guide>`
+:doc:`CDF Format Guide </user-guide/cdf_format_guide>`
 
 Using a Template for Global Metadata Attributes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A template of the required metadata can be obtained using the 
-:py:func:`~swxsoc_core.timedata.SpaceWeatherData.global_attribute_template` function::
+:py:func:`~swxsoc.swxdata.SWXData.global_attribute_template` function::
 
     >>> from collections import OrderedDict
-    >>> from swxsoc_core.timedata import SpaceWeatherData
-    >>> SpaceWeatherData.global_attribute_template()
+    >>> from swxsoc.swxdata import SWXData
+    >>> SWXData.global_attribute_template()
     OrderedDict([('DOI', None),
              ('Data_level', None),
              ('Data_version', None),
@@ -383,8 +382,8 @@ A template of the required metadata can be obtained using the
 You can also pass arguments into the function to get a partially populated template:: 
 
     >>> from collections import OrderedDict
-    >>> from swxsoc_core.timedata import SpaceWeatherData
-    >>> SpaceWeatherData.global_attribute_template(
+    >>> from swxsoc.swxdata import SWXData
+    >>> SWXData.global_attribute_template(
     ...     instr_name='eea', 
     ...     data_level='l1',
     ...     version='0.1.0'
@@ -406,19 +405,19 @@ You can also pass arguments into the function to get a partially populated templ
 This can make the definition of global metadata easier since instrument teams or users only need 
 to supply pieces of metadata that are in this template. Additional metadata items can be added 
 if desired. Once the template is instantiated and all attributes have been filled out, you can
-use this  during instantiation of your :py:class:`~swxsoc_core.timedata.SpaceWeatherData` container.
+use this  during instantiation of your :py:class:`~swxsoc.swxdata.SWXData` container.
 
 Variable Metadata Attributes
 ----------------------------
 
-Variable metadata requirements can be updated for a :py:class:`~swxsoc_core.timedata.SpaceWeatherData` 
-variable using the variable's :py:attr:`~swxsoc_core.timedata.SpaceWeatherData.meta` property which is an 
+Variable metadata requirements can be updated for a :py:class:`~swxsoc.swxdata.SWXData` 
+variable using the variable's :py:attr:`~swxsoc.swxdata.SWXData.meta` property which is an 
 `~collections.OrderedDict` of all attributes. 
 
 Required Variable Attributes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The :py:class:`~swxsoc_core.timedata.SpaceWeatherData` class requires one variable metadata attribute
+The :py:class:`~swxsoc.swxdata.SWXData` class requires one variable metadata attribute
 to be provided upon instantiation:
 
 - `CATDESC` : (Catalogue Description) This is a human readable description of the data variable.
@@ -426,13 +425,9 @@ to be provided upon instantiation:
 Derived Variable Attributes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The :py:class:`~swxsoc_core.util.schema.SpaceWeatherDataSchema` class derives several variable metadata
+The :py:class:`~swxsoc.util.schema.SWXSchema` class derives several variable metadata
 attributes required for ISTP compliance.
 
--  `TIME_BASE`
--  `RESOLUTION`
--  `TIME_SCALE`
--  `REFERENCE_POSITION`
 -  `DEPEND_0`
 -  `DISPLAY_TYPE`
 -  `FIELDNAM`
@@ -446,26 +441,26 @@ attributes required for ISTP compliance.
 -  `VAR_TYPE`
 
 For more information about each of these attributes please see the 
-:doc:`HERMES CDF Format Guide </user-guide/cdf_format_guide>`
+:doc:`CDF Format Guide </user-guide/cdf_format_guide>`
 
 Using a Template for Variable Metadata Attributes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A template of the required metadata can be obtained using the 
-:py:func:`~swxsoc_core.timedata.SpaceWeatherData.measurement_attribute_template` function::
+:py:func:`~swxsoc.swxdata.SWXData.measurement_attribute_template` function::
 
     >>> from collections import OrderedDict
-    >>> from swxsoc_core.timedata import SpaceWeatherData
-    >>> SpaceWeatherData.measurement_attribute_template()
+    >>> from swxsoc.swxdata import SWXData
+    >>> SWXData.measurement_attribute_template()
     OrderedDict([('CATDESC', None)])
 
-If you use the :py:func:`~swxsoc_core.timedata.SpaceWeatherData.add_measurement` function, it will 
+If you use the :py:func:`~swxsoc.swxdata.SWXData.add_measurement` function, it will 
 automatically fill most of them in for you. Additional pieces of metadata can be added if desired.
 
-Visualizing data in a ``SpaceWeatherData`` Container
+Visualizing data in a ``SWXData`` Container
 ====================================================
 
-The :py:class:`~swxsoc_core.timedata.SpaceWeatherData` provides a quick way to visualize its data through `~swxsoc_core.timedata.SpaceWeatherData.plot`.
+The :py:class:`~swxsoc.swxdata.SWXData` provides a quick way to visualize its data through `~swxsoc.swxdata.SWXData.plot`.
 By default, a plot will be generated with each measurement in its own plot panel.
 
 .. plot::
@@ -475,13 +470,13 @@ By default, a plot will be generated with each measurement in its own plot panel
     >>> import matplotlib.pyplot as plt
     >>> import astropy.units as u
     >>> from astropy.timeseries import TimeSeries
-    >>> from swxsoc_core.timedata import SpaceWeatherData
+    >>> from swxsoc.swxdata import SWXData
     >>> bx = np.concatenate([[0], np.random.choice(a=[-1, 0, 1], size=1000)]).cumsum(0)
     >>> by = np.concatenate([[0], np.random.choice(a=[-1, 0, 1], size=1000)]).cumsum(0)
     >>> bz = np.concatenate([[0], np.random.choice(a=[-1, 0, 1], size=1000)]).cumsum(0)
     >>> ts = TimeSeries(time_start="2016-03-22T12:30:31", time_delta=3 * u.s, data={"Bx": u.Quantity(bx, "nanoTesla", dtype=np.int16)})
-    >>> input_attrs = SpaceWeatherData.global_attribute_template("nemisis", "l1", "1.0.0")
-    >>> sw_data = SpaceWeatherData(timeseries=ts, meta=input_attrs)
+    >>> input_attrs = SWXData.global_attribute_template("nemisis", "l1", "1.0.0")
+    >>> sw_data = SWXData(timeseries=ts, meta=input_attrs)
     >>> sw_data.add_measurement(measure_name=f"By", data=u.Quantity(by, 'nanoTesla', dtype=np.int16))
     >>> sw_data.add_measurement(measure_name=f"Bz", data=u.Quantity(bz, 'nanoTesla', dtype=np.int16))
     >>> fig = plt.figure()
@@ -491,9 +486,8 @@ By default, a plot will be generated with each measurement in its own plot panel
 Writing a CDF File
 ==================
 
-The :py:class:`~swxsoc_core.timedata.SpaceWeatherData` class writes CDF files using the `~spacepy.pycdf` module.
-This can be done using the :py:func:`~swxsoc_core.timedata.SpaceWeatherData.save` method which only requires a path to the folder where the CDF file should be saved.
-The filename is automatically derived consistent with HERMES file naming requirements.
+The :py:class:`~swxsoc.swxdata.SWXData` class writes CDF files using the `~spacepy.pycdf` module.
+This can be done using the :py:func:`~swxsoc.swxdata.SWXData.save` method which only requires a path to the folder where the CDF file should be saved.
 If no path is provided it writes the file to the current directory.
 This function returns the full path to the CDF file that was generated.
 From this you can validate and distribute your CDF file.
@@ -501,11 +495,11 @@ From this you can validate and distribute your CDF file.
 Validating a CDF File
 =====================
 
-The :py:class:`~swxsoc_core.timedata.SpaceWeatherData` uses the `~spacepy.pycdf.istp` module for CDF validation, in addition to custom
-tests for additional metadata. A CDF file can be validated using the :py:func:`~swxsoc_core.util.validation.validate` method
+The :py:class:`~swxsoc.swxdata.SWXData` uses the `~spacepy.pycdf.istp` module for CDF validation, in addition to custom
+tests for additional metadata. A CDF file can be validated using the :py:func:`~swxsoc.util.validation.validate` method
 and by passing, as a parameter, the full path to the CDF file to be validated::
 
-    >>> from swxsoc_core.util.validation import validate
+    >>> from swxsoc.util.validation import validate
     >>> validation_errors = validate(cdf_file_path) # doctest: +SKIP
 
 This returns a `list[str]` that contains any validation errors that were encountered when examining the CDF file.

@@ -15,13 +15,13 @@ os.environ["CDF_LIB"] = "../cdf/lib"
 sys.path.insert(0, os.path.abspath(".."))
 # -- Project information -----------------------------------------------------
 
-project = "swxsoc_core"
+project = "swxsoc"
 copyright = "No rights reserved"
 author = "SWxSOC Team"
 
 # The full version, including alpha/beta/rc tags
-from swxsoc_core import __version__
-from swxsoc_core.util.schema import SpaceWeatherDataSchema
+from swxsoc import __version__
+from swxsoc.util.schema import SWXSchema
 
 version = __version__
 
@@ -54,11 +54,11 @@ if not os.path.exists("generated"):
     os.mkdir("generated")  # generate the directory before putting things in it
 # Global Attributes to CSV
 
-global_info = SpaceWeatherDataSchema().global_attribute_info()
+global_info = SWXSchema().global_attribute_info()
 global_info.write("./generated/global_attributes.csv", overwrite=True)
 
 # Variable Attributes to CSV
-variable_info = SpaceWeatherDataSchema().measurement_attribute_info()
+variable_info = SWXSchema().measurement_attribute_info()
 variable_info.write("./generated/variable_attributes.csv", overwrite=True)
 
 # Add any paths that contain templates here, relative to this directory.

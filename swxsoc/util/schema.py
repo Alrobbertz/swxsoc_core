@@ -15,24 +15,24 @@ from astropy.table import Table
 from astropy.time import Time
 from astropy import units as u
 from ndcube import NDCube
-import swxsoc_core
-from swxsoc_core import log
-from swxsoc_core.util import util, const
-from swxsoc_core.util.exceptions import warn_user
+import swxsoc
+from swxsoc import log
+from swxsoc.util import util, const
+from swxsoc.util.exceptions import warn_user
 
-__all__ = ["SpaceWeatherDataSchema"]
+__all__ = ["SWXSchema"]
 
 DEFAULT_GLOBAL_CDF_ATTRS_SCHEMA_FILE = "swxsoc_default_global_cdf_attrs_schema.yaml"
 DEFAULT_VARIABLE_CDF_ATTRS_SCHEMA_FILE = "swxsoc_default_variable_cdf_attrs_schema.yaml"
 
 
-class SpaceWeatherDataSchema:
+class SWXSchema:
     """
     Class representing a schema for data requirements and formatting. The SWxSOC Default Schema
     only includes attributes required for ISTP compliance. Additional mission-specific attributes
     or requirements should be added through additional global and variable schema layers. For an
     example of how to layer schema files, please see the HERMES mission core package, and
-    `HermesDataSchema` extension of the `SpaceWeatherDataSchema` class.
+    `HermesDataSchema` extension of the `SWXSchema` class.
 
     There are two main components to the Space Weather Data Schema, including both global and
     variable attribute information.
@@ -53,13 +53,13 @@ class SpaceWeatherDataSchema:
             overwrite: <bool> # Whether an existing value for the attribute should be overwritten if a different value is derived.
 
     The signature for all functions to derive global attributes should follow the format below.
-    The function takes in a parameter `data` which is a `SpaceWeatherData` object, or that of an
+    The function takes in a parameter `data` which is a `SWXData` object, or that of an
     extended data class, and returns a single attribute value for the given attribute to be
     derived.
 
     .. code-block:: python
 
-        def derivation_fn(self, data: SpaceWeatherData):
+        def derivation_fn(self, data: SWXData):
             # ... do manipulations as needed from `data`
             return "attribute_value"
 
@@ -247,19 +247,17 @@ class SpaceWeatherDataSchema:
         return self._default_global_attributes
 
     def _load_default_global_attr_schema(self) -> dict:
-        # The Default Schema file is contained in the `swxsoc_core/data` directory
+        # The Default Schema file is contained in the `swxsoc/data` directory
         default_schema_path = str(
-            Path(swxsoc_core.__file__).parent
-            / "data"
-            / DEFAULT_GLOBAL_CDF_ATTRS_SCHEMA_FILE
+            Path(swxsoc.__file__).parent / "data" / DEFAULT_GLOBAL_CDF_ATTRS_SCHEMA_FILE
         )
         # Load the Schema
         return self._load_yaml_data(yaml_file_path=default_schema_path)
 
     def _load_default_variable_attr_schema(self) -> dict:
-        # The Default Schema file is contained in the `swxsoc_core/data` directory
+        # The Default Schema file is contained in the `swxsoc/data` directory
         default_schema_path = str(
-            Path(swxsoc_core.__file__).parent
+            Path(swxsoc.__file__).parent
             / "data"
             / DEFAULT_VARIABLE_CDF_ATTRS_SCHEMA_FILE
         )
@@ -344,12 +342,12 @@ class SpaceWeatherDataSchema:
         - description: (`str`) A brief description of the attribute
         - default: (`str`) The default value used if none is provided
         - derived: (`bool`) Whether the attibute can be derived by the SWxSOC
-            :py:class:`~swxsoc_core.util.schema.SpaceWeatherDataSchema` class
+            :py:class:`~swxsoc.util.schema.SWXSchema` class
         - required: (`bool`) Whether the attribute is required by SWxSOC standards
         - validate: (`bool`) Whether the attribute is included in the
-            :py:func:`~swxsoc_core.util.validation.validate` checks (Note, not all attributes that
+            :py:func:`~swxsoc.util.validation.validate` checks (Note, not all attributes that
             are required are validated)
-        - overwrite: (`bool`) Whether the :py:class:`~swxsoc_core.util.schema.SpaceWeatherDataSchema`
+        - overwrite: (`bool`) Whether the :py:class:`~swxsoc.util.schema.SWXSchema`
             attribute derivations will overwrite an existing attribute value with an updated
             attribute value from the derivation process.
 
@@ -402,9 +400,9 @@ class SpaceWeatherDataSchema:
 
         - description: (`str`) A brief description of the attribute
         - derived: (`bool`) Whether the attibute can be derived by the SWxSOC
-            :py:class:`~swxsoc_core.util.schema.SpaceWeatherDataSchema` class
+            :py:class:`~swxsoc.util.schema.SWXSchema` class
         - required: (`bool`) Whether the attribute is required by SWxSOC standards
-        - overwrite: (`bool`) Whether the :py:class:`~swxsoc_core.util.schema.SpaceWeatherDataSchema`
+        - overwrite: (`bool`) Whether the :py:class:`~swxsoc.util.schema.SWXSchema`
             attribute derivations will overwrite an existing attribute value with an updated
             attribute value from the derivation process.
         - valid_values: (`str`) List of allowed values the attribute can take for SWxSOC products,
@@ -570,7 +568,7 @@ class SpaceWeatherDataSchema:
         @raise ValueError: if L{data} has irregular dimensions
 
         """
-        d = SpaceWeatherDataSchema._check_well_formed(data)
+        d = SWXSchema._check_well_formed(data)
         dims = d.shape
         elements = 1
         types = []
@@ -787,8 +785,8 @@ class SpaceWeatherDataSchema:
 
         Parameters
         ----------
-        data : `swxsoc_core.timedata.SpaceWeatherData`
-            An instance of `SpaceWeatherData` to derive metadata from
+        data : `swxsoc.swxdata.SWXData`
+            An instance of `SWXData` to derive metadata from
         var_name : `str`
             The name of the measurement to derive metadata for
         guess_types : `list[int]`, optional
@@ -835,6 +833,11 @@ class SpaceWeatherDataSchema:
                 f"Variable {var_name} has unrecognizable VAR_TYPE ({var_type}). Cannot Derive Metadata for Variable."
             )
 
+        # Derive Attributes Specific to `time`/Epoch Variable
+        if var_name == "time":
+            time_attributes = self._derive_time_attributes(var_data, guess_types[0])
+            measurement_attributes.update(time_attributes)
+
         # Derive Attributes Specific to `spectra` Data
         if hasattr(var_data, "wcs") and getattr(var_data, "wcs") is not None:
             spectra_attributes = self._derive_spectra_attributes(var_data)
@@ -842,36 +845,27 @@ class SpaceWeatherDataSchema:
 
         return measurement_attributes
 
-    def derive_time_attributes(self, data) -> OrderedDict:
+    def _derive_time_attributes(self, var_data, guess_type) -> OrderedDict:
         """
         Function to derive metadata for the time measurement.
 
         Parameters
         ----------
-        data : `swxsoc_core.timedata.SpaceWeatherData`
-            An instance of `SpaceWeatherData` to derive metadata from.
+        data : `swxsoc.swxdata.SWXData`
+            An instance of `SWXData` to derive metadata from.
 
         Returns
         -------
         attributes : `OrderedDict`
             A dict containing `key: value` pairs of time metadata attributes.
         """
-
-        # Get the Variable Data
-        var_data = data["time"]
-        (guess_dims, guess_types, guess_elements) = self._types(var_data)
-
-        time_attributes = self.derive_measurement_attributes(
-            data, "time", guess_types=guess_types
-        )
+        time_attributes = OrderedDict()
         # Check the Attributes that can be derived
-        time_attributes["REFERENCE_POSITION"] = self._get_reference_position(
-            guess_types[0]
-        )
-        time_attributes["RESOLUTION"] = self._get_resolution(data)
-        time_attributes["TIME_BASE"] = self._get_time_base(guess_types[0])
-        time_attributes["TIME_SCALE"] = self._get_time_scale(guess_types[0])
-        time_attributes["UNITS"] = self._get_time_units(guess_types[0])
+        time_attributes["REFERENCE_POSITION"] = self._get_reference_position(guess_type)
+        time_attributes["RESOLUTION"] = self._get_resolution(var_data)
+        time_attributes["TIME_BASE"] = self._get_time_base(guess_type)
+        time_attributes["TIME_SCALE"] = self._get_time_scale(guess_type)
+        time_attributes["UNITS"] = self._get_time_units(guess_type)
         return time_attributes
 
     def derive_global_attributes(self, data) -> OrderedDict:
@@ -880,8 +874,8 @@ class SpaceWeatherDataSchema:
 
         Parameters
         ----------
-        data : `swxsoc_core.timedata.SpaceWeatherData`
-            An instance of `SpaceWeatherData` to derive metadata from.
+        data : `swxsoc.swxdata.SWXData`
+            An instance of `SWXData` to derive metadata from.
 
         Returns
         -------
@@ -1125,15 +1119,13 @@ class SpaceWeatherDataSchema:
             msg = f"Reference Position for Time type ({guess_type}) not found."
             raise TypeError(msg)
 
-    def _get_resolution(self, data):
-        # Get the Variable Data
-        times = data.time
-        if len(times) < 2:
+    def _get_resolution(self, var_data):
+        if len(var_data) < 2:
             raise ValueError(
-                f"Can not derive Time Resolution, need 2 samples, found {times}."
+                f"Can not derive Time Resolution, need 2 samples, found {var_data}."
             )
         # Calculate the Timedelta between two time samples
-        delta = times[1] - times[0]
+        delta = var_data[1] - var_data[0]
         # Get the number of second between samples.
         delta_seconds = delta.to_value("s")
         return f"{delta_seconds}s"
@@ -1382,7 +1374,7 @@ class SpaceWeatherDataSchema:
         attr_name = "Source_name"
         if (attr_name not in data.meta) or (not data.meta[attr_name]):
             # Get Module Default
-            sc_id = swxsoc_core.MISSION_NAME
+            sc_id = swxsoc.MISSION_NAME
         else:
             sc_id = data.meta["Source_name"]
             # Formatting
@@ -1396,7 +1388,7 @@ class SpaceWeatherDataSchema:
         attr_name = "Source_name"
         if (attr_name not in data.meta) or (not data.meta[attr_name]):
             # Get Module Default
-            sc_id = swxsoc_core.MISSION_NAME
+            sc_id = swxsoc.MISSION_NAME
         else:
             sc_id = data.meta["Source_name"]
             # Formatting
@@ -1533,7 +1525,7 @@ class SpaceWeatherDataSchema:
         """Function to get the version of SWxSOC used to generate the data"""
         attr_name = "SWxSOC_version"
         if (attr_name not in data.meta) or (not data.meta[attr_name]):
-            swxsoc_version = swxsoc_core.__version__
+            swxsoc_version = swxsoc.__version__
         else:
             swxsoc_version = data.meta[attr_name]
         return swxsoc_version

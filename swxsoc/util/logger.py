@@ -4,7 +4,7 @@ import logging
 
 from astropy.logger import AstropyLogger
 
-from swxsoc_core.util.exceptions import SpaceWeatherWarning
+from swxsoc.util.exceptions import SWXWarning
 
 """This code is based on that provided by SunPy and AstroPy see
     licenses/SUNPY.rst and licenses/ASTROPY.rst
@@ -17,22 +17,22 @@ class MyLogger(AstropyLogger):
 
     This inherits the logging enhancements of `~astropy.logger.AstropyLogger`.
     This logger is able to capture and log warnings that are based on
-    `~swxsoc_core.util.exceptions.SpaceWeatherWarning`.  Other warnings will be ignored and
+    `~swxsoc.util.exceptions.SWXWarning`.  Other warnings will be ignored and
     passed on to other loggers (e.g., from Astropy).
     """
 
-    # Override the existing _showwarning() to capture SpaceWeatherWarning instead of AstropyWarning
+    # Override the existing _showwarning() to capture SWXWarning instead of AstropyWarning
     def _showwarning(self, *args, **kwargs):
         # Bail out if we are not catching a warning
-        if not isinstance(args[0], SpaceWeatherWarning):
+        if not isinstance(args[0], SWXWarning):
             return self._showwarning_orig(*args, **kwargs)
 
         warning = args[0]
         # Deliberately not using isinstance here: We want to display
         # the class name only when it's not the default class,
-        # SpaceWeatherWarning.  The name of subclasses of SpaceWeatherWarning should
+        # SWXWarning.  The name of subclasses of SWXWarning should
         # be displayed.
-        if type(warning) not in (SpaceWeatherWarning,):
+        if type(warning) not in (SWXWarning,):
             message = f"{warning.__class__.__name__}: {args[0]}"
         else:
             message = str(args[0])
@@ -71,7 +71,7 @@ def _init_log(config=None):
     orig_logger_cls = logging.getLoggerClass()
     logging.setLoggerClass(MyLogger)
     try:
-        log = logging.getLogger("swxsoc_core")
+        log = logging.getLogger("swxsoc")
         if config is not None:
             _config_to_loggerConf(config)
         log._set_defaults()

@@ -9,9 +9,9 @@ import pytest
 
 from astropy.utils.exceptions import AstropyUserWarning
 
-from swxsoc_core import config, log
-from swxsoc_core.util.exceptions import SpaceWeatherUserWarning
-from swxsoc_core.util.logger import MyLogger
+from swxsoc import config, log
+from swxsoc.util.exceptions import SWXUserWarning
+from swxsoc.util.logger import MyLogger
 
 """This code is based on that provided by SunPy see
     licenses/SUNPY.rst
@@ -28,7 +28,7 @@ level_to_numeric = {
 
 
 def test_logger_name():
-    assert log.name == "swxsoc_core"
+    assert log.name == "swxsoc"
 
 
 def test_is_the_logger_there():
@@ -79,7 +79,7 @@ def test_origin():
     with log.log_to_list() as log_list:
         log.info("test1")
 
-    # assert log_list[0].origin == "swxsoc_core.util.tests.test_logger"
+    # assert log_list[0].origin == "swxsoc.util.tests.test_logger"
     assert log_list[0].message.startswith("test1")
 
 
@@ -109,12 +109,10 @@ def test_swxsoc_warnings_logging():
 
     # Without warnings logging
     with pytest.warns(
-        SpaceWeatherUserWarning, match="This warning should not be captured"
+        SWXUserWarning, match="This warning should not be captured"
     ) as warn_list:
         with log.log_to_list() as log_list:
-            warnings.warn(
-                "This warning should not be captured", SpaceWeatherUserWarning
-            )
+            warnings.warn("This warning should not be captured", SWXUserWarning)
     assert len(log_list) == 0
     assert len(warn_list) == 1
 
@@ -124,16 +122,16 @@ def test_swxsoc_warnings_logging():
     ) as warn_list:
         log.enable_warnings_logging()
         with log.log_to_list() as log_list:
-            warnings.warn("This warning should be captured", SpaceWeatherUserWarning)
+            warnings.warn("This warning should be captured", SWXUserWarning)
             warnings.warn("This warning should not be captured", AstropyUserWarning)
         log.disable_warnings_logging()
     assert len(log_list) == 1
     assert len(warn_list) == 1
     assert log_list[0].levelname == "WARNING"
     assert log_list[0].message.startswith(
-        "SpaceWeatherUserWarning: This warning should be captured"
+        "SWXUserWarning: This warning should be captured"
     )
-    # assert log_list[0].origin == "swxsoc_core.util.tests.test_logger"
+    # assert log_list[0].origin == "swxsoc.util.tests.test_logger"
 
     # Restore the state of warnings logging prior to this test
     log._showwarning_orig = previous

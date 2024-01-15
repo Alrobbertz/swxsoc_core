@@ -9,10 +9,10 @@ from astropy.time import Time
 from astropy.timeseries import TimeSeries
 import astropy.units as u
 from spacepy.pycdf import CDF
-import swxsoc_core
-from swxsoc_core.timedata import SpaceWeatherData
-from swxsoc_core.util import const
-from swxsoc_core.util.validation import validate, CDFValidator
+import swxsoc
+from swxsoc.swxdata import SWXData
+from swxsoc.util import const
+from swxsoc.util.validation import validate, CDFValidator
 
 SAMPLE_CDF_FILE = "swxsoc_nms_default_l1_20160322_123031_v0.0.1.cdf"
 
@@ -41,14 +41,14 @@ def get_test_timeseries():
 
 def test_non_cdf_file():
     """Function to Test a file using the CDFValidator that is not a CDF File"""
-    invlid_path = str(Path(swxsoc_core.__file__).parent / "data" / "README.rst")
+    invlid_path = str(Path(swxsoc.__file__).parent / "data" / "README.rst")
     with pytest.raises(ValueError):
         _ = validate(invlid_path)
 
 
 def test_non_existant_file():
     """Function to Test a file using the CDFValidator that does not exist"""
-    invlid_path = str(Path(swxsoc_core.__file__).parent / "data" / "test.cdf")
+    invlid_path = str(Path(swxsoc.__file__).parent / "data" / "test.cdf")
     result = validate(invlid_path)
     assert len(result) == 1
     assert "Could not open CDF File at path:" in result[0]
@@ -57,10 +57,10 @@ def test_non_existant_file():
 def test_missing_global_attrs():
     """Function to ensure missing global attributes are reported in validation"""
 
-    # Create a Test SpaceWeatherData
+    # Create a Test SWXData
     ts = get_test_timeseries()
-    template = SpaceWeatherData.global_attribute_template("eea", "l2", "0.0.0")
-    td = SpaceWeatherData(timeseries=ts, meta=template)
+    template = SWXData.global_attribute_template("eea", "l2", "0.0.0")
+    td = SWXData(timeseries=ts, meta=template)
 
     # Convert to a CDF File and Validate
     with tempfile.TemporaryDirectory() as tmpdirname:
@@ -80,10 +80,10 @@ def test_missing_global_attrs():
 def test_missing_var_type():
     """Function to ensure missing variable attributes are reported in validation"""
 
-    # Create a Test SpaceWeatherData
+    # Create a Test SWXData
     ts = get_test_timeseries()
-    template = SpaceWeatherData.global_attribute_template("eea", "l2", "0.0.0")
-    td = SpaceWeatherData(timeseries=ts, meta=template)
+    template = SWXData.global_attribute_template("eea", "l2", "0.0.0")
+    td = SWXData(timeseries=ts, meta=template)
 
     # Convert to a CDF File and Validate
     with tempfile.TemporaryDirectory() as tmpdirname:
@@ -103,10 +103,10 @@ def test_missing_var_type():
 def test_missing_variable_attrs():
     """Function to ensure missing variable attributes are reported in validation"""
 
-    # Create a Test SpaceWeatherData
+    # Create a Test SWXData
     ts = get_test_timeseries()
-    template = SpaceWeatherData.global_attribute_template("eea", "l2", "0.0.0")
-    td = SpaceWeatherData(timeseries=ts, meta=template)
+    template = SWXData.global_attribute_template("eea", "l2", "0.0.0")
+    td = SWXData(timeseries=ts, meta=template)
 
     # Convert to a CDF File and Validate
     with tempfile.TemporaryDirectory() as tmpdirname:

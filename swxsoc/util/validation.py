@@ -4,7 +4,7 @@ import numpy as np
 from typing import Union
 from spacepy.pycdf import CDF, CDFError
 from spacepy.pycdf.istp import FileChecks, VariableChecks
-from swxsoc_core.util.schema import SpaceWeatherDataSchema
+from swxsoc.util.schema import SWXSchema
 
 __all__ = ["validate", "CDFValidator"]
 
@@ -36,7 +36,7 @@ def validate(filepath: str) -> list[str]:
     return validator.validate(filepath)
 
 
-class SpaceWeatherDataValidator(ABC):
+class SWXDataValidator(ABC):
     """
     Abstract base class for heliophysics data validators.
     """
@@ -59,7 +59,7 @@ class SpaceWeatherDataValidator(ABC):
         pass
 
 
-class CDFValidator(SpaceWeatherDataValidator):
+class CDFValidator(SWXDataValidator):
     """
     Validator for CDF files.
     """
@@ -68,7 +68,7 @@ class CDFValidator(SpaceWeatherDataValidator):
         super().__init__()
 
         # CDF Schema
-        self.schema = SpaceWeatherDataSchema()
+        self.schema = SWXSchema()
 
     def validate(self, file_path: str) -> list[str]:
         """

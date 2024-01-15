@@ -9,8 +9,8 @@ import shutil
 import configparser
 from pathlib import Path
 
-import swxsoc_core
-from swxsoc_core.util.exceptions import warn_user
+import swxsoc
+from swxsoc.util.exceptions import warn_user
 
 # This is to fix issue with AppDirs not writing to /tmp/ in AWS Lambda
 if not os.getenv("LAMBDA_ENVIRONMENT"):
@@ -75,7 +75,7 @@ def _find_config_files():
     config_filename = "configrc"
 
     # find default configuration file
-    module_dir = Path(swxsoc_core.__file__).parent
+    module_dir = Path(swxsoc.__file__).parent
     config_files.append(str(module_dir / "data" / "configrc"))
 
     # if a user configuration file exists, add that to list of files to read
@@ -97,14 +97,14 @@ def get_and_create_download_dir():
         return download_dir
 
     download_dir = (
-        Path(swxsoc_core.config.get("downloads", "download_dir")).expanduser().resolve()
+        Path(swxsoc.config.get("downloads", "download_dir")).expanduser().resolve()
     )
     if not _is_writable_dir(download_dir):
         raise RuntimeError(
             f'Could not write to hermes downloads directory="{download_dir}"'
         )
 
-    return swxsoc_core.config.get("downloads", "download_dir")
+    return swxsoc.config.get("downloads", "download_dir")
 
 
 def get_and_create_sample_dir():
@@ -112,14 +112,14 @@ def get_and_create_sample_dir():
     Get the config of download directory and create one if not present.
     """
     sample_dir = (
-        Path(swxsoc_core.config.get("downloads", "sample_dir")).expanduser().resolve()
+        Path(swxsoc.config.get("downloads", "sample_dir")).expanduser().resolve()
     )
     if not _is_writable_dir(sample_dir):
         raise RuntimeError(
             f'Could not write to hermes sample data directory="{sample_dir}"'
         )
 
-    return swxsoc_core.config.get("downloads", "sample_dir")
+    return swxsoc.config.get("downloads", "sample_dir")
 
 
 def print_config():
@@ -131,10 +131,10 @@ def print_config():
         print("  " + file_)
 
     print("\nCONFIGURATION:")
-    for section in swxsoc_core.config.sections():
+    for section in swxsoc.config.sections():
         print(f"  [{section}]")
-        for option in swxsoc_core.config.options(section):
-            print(f"  {option} = {swxsoc_core.config.get(section, option)}")
+        for option in swxsoc.config.options(section):
+            print(f"  {option} = {swxsoc.config.get(section, option)}")
         print("")
 
 
@@ -176,7 +176,7 @@ def copy_default_config(overwrite=False):
         If True, existing config file will be overwritten.
     """
     config_filename = "configrc"
-    config_file = Path(swxsoc_core.__file__).parent / "data" / config_filename
+    config_file = Path(swxsoc.__file__).parent / "data" / config_filename
     user_config_dir = Path(_get_user_configdir())
     user_config_file = user_config_dir / config_filename
 

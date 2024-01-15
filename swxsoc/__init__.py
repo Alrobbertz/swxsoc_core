@@ -6,8 +6,8 @@ except ImportError:
     __version__ = "unknown version"
     version_tuple = (0, 0, "unknown version")
 
-from swxsoc_core.util.config import load_config, print_config
-from swxsoc_core.util.logger import _init_log
+from swxsoc.util.config import load_config, print_config
+from swxsoc.util.logger import _init_log
 
 # Load user configuration
 config = load_config()
@@ -31,4 +31,4 @@ INST_TO_SHORTNAME = dict(zip(INST_NAMES, INST_SHORTNAMES))
 INST_TO_TARGETNAME = dict(zip(INST_NAMES, INST_TARGETNAMES))
 INST_TO_FULLNAME = dict(zip(INST_NAMES, INST_FULLNAMES))
 
-# log.info(f"swxsoc_core version: {__version__}")
+# log.info(f"swxsoc version: {__version__}")

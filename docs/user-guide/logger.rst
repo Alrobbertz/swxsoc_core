@@ -39,12 +39,12 @@ To make permanent changes to the logger configuration see the ``[logger]`` secti
 If you'd like to control the logger configuration for your current session
 first import the logger::
 
-    >>> from swxsoc_core import log
+    >>> from swxsoc import log
 
 or also by::
 
     >>> import logging
-    >>> log = logging.getLogger('swxsoc_core')
+    >>> log = logging.getLogger('swxsoc')
 
 The threshold level for messages can be set with::
 
@@ -61,7 +61,7 @@ Context managers
 If you'd like to
 capture messages as they are generated you can do that with a context manager::
 
-    >>> from swxsoc_core import log
+    >>> from swxsoc import log
     >>> with log.log_to_list() as log_list:  #doctest: +SKIP
     ...    # your code here  # doctest: +SKIP
 
@@ -69,7 +69,7 @@ Once your code is executed, ``log_list`` will be a Python list containing all of
 This does not divert the messages from going to a file or to the screen.
 It is also possible to send the messages to a custom file with::
 
-    >>> from swxsoc_core import log
+    >>> from swxsoc import log
     >>> with log.log_to_file('myfile.log'):  #doctest: +SKIP
     ...     # your code here  #doctest: +SKIP
 

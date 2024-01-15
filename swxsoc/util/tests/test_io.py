@@ -14,12 +14,12 @@ from astropy.nddata import NDData
 from astropy.wcs import WCS
 from ndcube import NDCube, NDCollection
 from spacepy.pycdf import CDFError, CDF
-from swxsoc_core.timedata import SpaceWeatherData
+from swxsoc.swxdata import SWXData
 
 
 def get_test_sw_data():
     """
-    Function to get test swxsoc_core.timedata.SpaceWeatherData objects to re-use in other tests
+    Function to get test swxsoc.swxdata.SWXData objects to re-use in other tests
     """
     ts = TimeSeries()
     ts.meta.update(
@@ -70,8 +70,8 @@ def get_test_sw_data():
         ]
     )
 
-    # Create SpaceWeatherData Object
-    sw_data = SpaceWeatherData(timeseries=ts, support=support, spectra=spectra)
+    # Create SWXData Object
+    sw_data = SWXData(timeseries=ts, support=support, spectra=spectra)
 
     return sw_data
 
@@ -82,11 +82,11 @@ def test_cdf_io():
     td = get_test_sw_data()
 
     with tempfile.TemporaryDirectory() as tmpdirname:
-        # Convert SpaceWeatherData the to a CDF File
+        # Convert SWXData the to a CDF File
         test_file_output_path = td.save(output_path=tmpdirname)
 
-        # Load the CDF to a SpaceWeatherData Object
-        td_loaded = SpaceWeatherData.load(test_file_output_path)
+        # Load the CDF to a SWXData Object
+        td_loaded = SWXData.load(test_file_output_path)
 
         assert len(td.timeseries) == len(td_loaded.timeseries)
         assert len(td.timeseries.columns) == len(td_loaded.timeseries.columns)
@@ -100,7 +100,7 @@ def test_cdf_bad_file_path():
     with tempfile.TemporaryDirectory() as tmpdirname:
         # Try loading from non-existant_path
         with pytest.raises(FileNotFoundError):
-            _ = SpaceWeatherData.load(tmpdirname + "non_existant_file.cdf")
+            _ = SWXData.load(tmpdirname + "non_existant_file.cdf")
 
 
 def test_cdf_nrv_support_data():
@@ -111,7 +111,7 @@ def test_cdf_nrv_support_data():
     td = get_test_sw_data()
 
     with tempfile.TemporaryDirectory() as tmpdirname:
-        # Convert SpaceWeatherData the to a CDF File
+        # Convert SWXData the to a CDF File
         test_file_output_path = td.save(output_path=tmpdirname)
 
         # Load the JSON file as JSON
@@ -124,7 +124,7 @@ def test_cdf_nrv_support_data():
             cdf_file["Test_Support_Var"].meta["UNITS"] = "counts"
 
         # Make sure we can load the modified JSON
-        td_loaded = SpaceWeatherData.load(test_file_output_path)
+        td_loaded = SWXData.load(test_file_output_path)
 
         assert "Test_NRV_Var" in td_loaded.support
         assert "Test_Support_Var" in td_loaded.timeseries.columns
@@ -138,7 +138,7 @@ def test_cdf_spectra_data():
     td = get_test_sw_data()
 
     with tempfile.TemporaryDirectory() as tmpdirname:
-        # Convert SpaceWeatherData the to a CDF File
+        # Convert SWXData the to a CDF File
         test_file_output_path = td.save(output_path=tmpdirname)
 
         # Load the JSON file as JSON
@@ -148,6 +148,6 @@ def test_cdf_spectra_data():
             cdf_file["Test_Spectra_Var"].meta["UNITS"] = "counts"
 
         # Make sure we can load the modified JSON
-        td_loaded = SpaceWeatherData.load(test_file_output_path)
+        td_loaded = SWXData.load(test_file_output_path)
 
         assert "Test_Spectra_Var" in td_loaded.spectra

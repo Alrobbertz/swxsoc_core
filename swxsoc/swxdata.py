@@ -15,16 +15,16 @@ from astropy.nddata import NDData
 from astropy import units as u
 import ndcube
 from ndcube import NDCube, NDCollection
-import swxsoc_core
-from swxsoc_core.util.io import CDFHandler
-from swxsoc_core.util.schema import SpaceWeatherDataSchema
-from swxsoc_core.util.exceptions import warn_user
-from swxsoc_core.util.util import VALID_DATA_LEVELS
+import swxsoc
+from swxsoc.util.io import CDFHandler
+from swxsoc.util.schema import SWXSchema
+from swxsoc.util.exceptions import warn_user
+from swxsoc.util.util import VALID_DATA_LEVELS
 
-__all__ = ["SpaceWeatherData"]
+__all__ = ["SWXData"]
 
 
-class SpaceWeatherData:
+class SWXData:
     """
     A generic object for loading, storing, and manipulating space weather time series data.
 
@@ -48,7 +48,7 @@ class SpaceWeatherData:
     >>> from ndcube import NDCube, NDCollection
     >>> from astropy.wcs import WCS
     >>> from astropy.nddata import NDData
-    >>> from swxsoc_core.timedata import SpaceWeatherData
+    >>> from swxsoc.swxdata import SWXData
     >>> # Create a TimeSeries structure
     >>> data = u.Quantity([1, 2, 3, 4], "gauss", dtype=np.uint16)
     >>> ts = TimeSeries(time_start="2016-03-22T12:30:31", time_delta=3 * u.s, data={"Bx": data})
@@ -71,9 +71,9 @@ class SpaceWeatherData:
     ...     "data_mask": NDData(data=np.eye(100, 100, dtype=np.uint16))
     ... }
     >>> # Create Global Metadata Attributes
-    >>> input_attrs = SpaceWeatherData.global_attribute_template("eea", "l1", "1.0.0")
-    >>> # Create SpaceWeatherData Object
-    >>> sw_data = SpaceWeatherData(timeseries=ts, support=support_data, spectra=spectra, meta=input_attrs)
+    >>> input_attrs = SWXData.global_attribute_template("eea", "l1", "1.0.0")
+    >>> # Create SWXData Object
+    >>> sw_data = SWXData(timeseries=ts, support=support_data, spectra=spectra, meta=input_attrs)
 
     Raises
     ------
@@ -210,7 +210,7 @@ class SpaceWeatherData:
         # ================================================
 
         # Derive Metadata
-        self.schema = SpaceWeatherDataSchema()
+        self.schema = SWXSchema()
         self._derive_metadata()
 
     @property
@@ -271,15 +271,15 @@ class SpaceWeatherData:
 
     def __repr__(self):
         """
-        Returns a representation of the `SpaceWeatherData` class.
+        Returns a representation of the `SWXData` class.
         """
         return self.__str__()
 
     def __str__(self):
         """
-        Returns a string representation of the `SpaceWeatherData` class.
+        Returns a string representation of the `SWXData` class.
         """
-        str_repr = f"SpaceWeatherData() Object:\n"
+        str_repr = f"SWXData() Object:\n"
         # Global Attributes/Metedata
         str_repr += f"Global Attrs:\n"
         for attr_name, attr_value in self._timeseries.meta.items():
@@ -319,18 +319,18 @@ class SpaceWeatherData:
         template : `collections.OrderedDict`
             A template for required global attributes.
         """
-        meta = SpaceWeatherDataSchema().global_attribute_template()
+        meta = SWXSchema().global_attribute_template()
 
         # Check the Optional Instrument Name
         if instr_name:
-            if instr_name not in swxsoc_core.INST_NAMES:
+            if instr_name not in swxsoc.INST_NAMES:
                 raise ValueError(
-                    f"Instrument, {instr_name}, is not recognized. Must be one of {swxsoc_core.INST_NAMES}."
+                    f"Instrument, {instr_name}, is not recognized. Must be one of {swxsoc.INST_NAMES}."
                 )
             # Set the Property
             meta[
                 "Descriptor"
-            ] = f"{instr_name.upper()}>{swxsoc_core.INST_TO_FULLNAME[instr_name]}"
+            ] = f"{instr_name.upper()}>{swxsoc.INST_TO_FULLNAME[instr_name]}"
 
         # Check the Optional Data Level
         if data_level:
@@ -364,11 +364,11 @@ class SpaceWeatherData:
         template : `collections.OrderedDict`
             A template for required variable attributes that must be provided.
         """
-        return SpaceWeatherDataSchema().measurement_attribute_template()
+        return SWXSchema().measurement_attribute_template()
 
     def _derive_metadata(self):
         """
-        Funtion to derive global and measurement metadata based on a SpaceWeatherDataSchema
+        Funtion to derive global and measurement metadata based on a SWXSchema
         """
 
         # Get Default Metadata
@@ -381,16 +381,8 @@ class SpaceWeatherData:
         ).items():
             self._update_global_attribute(attr_name, attr_value)
 
-        # Time Measurement Attributes
-        for attr_name, attr_value in self.schema.derive_time_attributes(
-            self._timeseries
-        ).items():
-            self._update_timeseries_attribute(
-                var_name="time", attr_name=attr_name, attr_value=attr_value
-            )
-
-        # Other Measurement Attributes
-        for col in [col for col in self._timeseries.columns if col != "time"]:
+        # TimeSeries Measurement Attributes
+        for col in self._timeseries.columns:
             for attr_name, attr_value in self.schema.derive_measurement_attributes(
                 self._timeseries, col
             ).items():
@@ -819,8 +811,8 @@ class SpaceWeatherData:
 
         Returns
         -------
-        data : `SpaceWeatherData`
-            A `SpaceWeatherData` object containing the loaded data.
+        data : `SWXData`
+            A `SWXData` object containing the loaded data.
 
         Raises
         ------
@@ -836,6 +828,6 @@ class SpaceWeatherData:
         else:
             raise ValueError(f"Unsupported file type: {file_extension}")
 
-        # Load data using the handler and return a SpaceWeatherData object
+        # Load data using the handler and return a SWXData object
         timeseries, support, spectra = handler.load_data(file_path)
         return cls(timeseries=timeseries, support=support, spectra=spectra)
