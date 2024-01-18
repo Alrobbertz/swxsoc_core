@@ -82,8 +82,8 @@ Information on the file format can be seen below:
         required: <bool>
         validate: <bool>
         overwrite: <bool>
-    attriubte_name: ...
-        description: ...
+    attriubte_name: 
+        description: <string> ...
 
 Each of the keys for global metadata requirements are defined in the table below. 
 
@@ -188,23 +188,22 @@ An example of a valid file format can be seen below.
             overwrite: <bool>
             alternate: <string>
         attribute_name_2: 
-            description: ...
+            description: <string> ...
         time_attribute:
-            description: ...
+            description: <string> ...
         spectra_attribute_i:
-            description: ...
-        ...
+            description: <string> ...
     data:
-        - attribute_name_1
-        - attribute_name_2
+      - attribute_name_1
+      - attribute_name_2
     support_data:
-        - attribute_name_2
+      - attribute_name_2
     metadata:
-        - attribute_name_3
+      - attribute_name_3
     epoch:
-        - time_attribute
+      - time_attribute
     spectra: 
-        - spectra_attribute_i
+      - spectra_attribute_i
 
 Each of the keys for variable metadata requirements are defined in the table below. 
 
