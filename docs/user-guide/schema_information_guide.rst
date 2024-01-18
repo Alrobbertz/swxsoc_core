@@ -142,6 +142,7 @@ Global attributes can be derived by:
 Global attributes are derived in the :py:class:`~swxsoc.util.schema.SWXSchema` class in the following way. 
 The code provided here is just pseudocode, and not the actual function code. For the actual code please see the :py:func:`~swxsoc.util.schema.SWXSchema.derive_global_attributes` function documentation. 
 
+.. rstcheck: ignore-next-code-block
 .. code-block:: python
 
     for attr_name, attr_schema in self.global_attribute_schema:
@@ -266,6 +267,7 @@ Variable attributes can be derived by:
 Variable attributes are derived in the :py:class:`~swxsoc.util.schema.SWXSchema` class in the following way. 
 The code provided here is just pseudocode, and not the actual function code. For the actual code please see the :py:func:`~swxsoc.util.schema.SWXSchema.derive_measurement_attributes` function documentation. 
 
+.. rstcheck: ignore-next-code-block
 .. code-block:: python
 
     derived_attributes = [] # collect derived attributes based on Index, whether the variable is an Epoch variable, and whether it is a Spectra variable
