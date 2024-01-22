@@ -27,18 +27,17 @@ Overview
     :alt: Codestyle and linting using flake8
 
 .. |coverage| image:: https://codecov.io/gh/Alrobbertz/swxsoc_core/branch/main/graph/badge.svg?token=C6JLIWZRBU 
-    :target: https://codecov.io/gh/swxsoc/swxsoc
-    :alt: Testing coverage
+    :target: https://codecov.io/gh/Alrobbertz/swxsoc_core
 
-.. |readthedocs| image:: https://readthedocs.org/projects/swxsoc/badge/?version=latest
-    :target: https://swxsoc.readthedocs.io/en/latest/?badge=latest
+.. |readthedocs| image:: https://readthedocs.org/projects/swxsoc-core/badge/?version=latest
+    :target: https://swxsoc-core.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
 .. end-badges
 
 Documentation
 -------------
-The documentation is hosted on readthedocs and is available `here <https://swxsoc.readthedocs.io/en/latest/>`_.
+The documentation is hosted on readthedocs and is available `here <https://swxsoc-core.readthedocs.io/en/latest/>`_.
 
 License
 -------
